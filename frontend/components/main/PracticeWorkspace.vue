@@ -113,8 +113,10 @@ onBeforeUnmount(() => {
 }
 
 .practice-word-column {
-  align-self: stretch;
+  align-self: start;
   min-width: 0;
+  height: calc(100dvh - 8rem);
+  max-height: calc(100dvh - 8rem);
 }
 
 .detail-panel {
@@ -201,12 +203,6 @@ onBeforeUnmount(() => {
 
   .detail-panel {
     transform: none;
-  }
-
-  .practice-word-column {
-    align-self: start;
-    height: calc(100dvh - 8rem);
-    max-height: calc(100dvh - 8rem);
   }
 
   .is-detail-open .practice-track {

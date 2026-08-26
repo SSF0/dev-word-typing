@@ -6,22 +6,25 @@
   >
     <div class="word-rail-heading">
       <h5>本节内容</h5>
-      <p>答对解锁 · 点击可看</p>
+      <p>点击查看 · 再点练习</p>
     </div>
 
-    <div class="word-list flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div class="word-list flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
       <button
-        v-for="statement in learningStatements"
+        v-for="(statement, index) in learningStatements"
         :key="statement.id"
+        :ref="(element) => setWordItemRef(statement.id, element)"
         type="button"
         class="word-item flex h-16 shrink-0 items-center px-3"
         :class="{ 'is-current': isCurrentStatement(statement) }"
-        :aria-label="isKeywordRevealed(statement) ? `${displayTerm(statement)} 已显示` : '显示这个练习词'"
+        :aria-label="keywordActionLabel(statement)"
+        :aria-current="isCurrentStatement(statement) ? 'true' : undefined"
         :aria-pressed="isKeywordRevealed(statement)"
         :data-active="isCurrentStatement(statement)"
         :data-revealed="isKeywordRevealed(statement)"
+        :data-statement-id="statement.id"
         data-test="learning-keyword"
-        @click="revealKeyword(statement.id)"
+        @click="handleKeywordClick(statement, index)"
       >
         <span
           class="word-content w-full"
@@ -31,13 +34,13 @@
           <span class="word-title-row">
             <span class="word-title">{{ displayTerm(statement) }}</span>
             <span
-              v-if="courseStore.isStatementUnlocked(statement.id)"
-              class="word-state is-unlocked"
-            >已解锁</span>
-            <span
-              v-else-if="isCurrentStatement(statement)"
+              v-if="isCurrentStatement(statement)"
               class="word-state"
             >正在练</span>
+            <span
+              v-else-if="courseStore.isStatementUnlocked(statement.id)"
+              class="word-state is-unlocked"
+            >已解锁</span>
           </span>
           <span class="word-meaning">{{ statement.chinese }}</span>
         </span>
@@ -45,9 +48,10 @@
         <span
           v-if="!isKeywordRevealed(statement)"
           class="word-lock"
+          :class="{ 'is-current-lock': isCurrentStatement(statement) }"
         >
-          <span>点击查看</span>
-          <span>答对后自动解锁</span>
+          <span>{{ isCurrentStatement(statement) ? "正在练习" : "点击查看" }}</span>
+          <span>{{ isCurrentStatement(statement) ? "答案仍保持隐藏" : "答对后自动解锁" }}</span>
         </span>
       </button>
     </div>
@@ -55,13 +59,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import type { ComponentPublicInstance } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
+import { useGameMode } from "~/composables/main/game";
 import { useCourseStore } from "~/store/course";
 import type { Statement } from "~/types";
 
 const courseStore = useCourseStore();
+const { showQuestion } = useGameMode();
 const manuallyRevealedIds = ref<Set<string>>(new Set());
+const wordItemElements = new Map<string, HTMLElement>();
 
 const learningStatements = computed(() => courseStore.currentCourse?.statements ?? []);
 
@@ -79,9 +87,34 @@ function isKeywordRevealed(statement: Statement) {
   );
 }
 
-function revealKeyword(statementId: string) {
-  if (courseStore.isStatementUnlocked(statementId)) return;
-  manuallyRevealedIds.value = new Set(manuallyRevealedIds.value).add(statementId);
+function keywordActionLabel(statement: Statement) {
+  if (isCurrentStatement(statement) && !isKeywordRevealed(statement)) {
+    return "正在练习，点击查看这个练习词";
+  }
+  return isKeywordRevealed(statement)
+    ? `${displayTerm(statement)}，点击开始练习`
+    : "显示这个练习词";
+}
+
+function handleKeywordClick(statement: Statement, index: number) {
+  if (!isKeywordRevealed(statement)) {
+    manuallyRevealedIds.value = new Set(manuallyRevealedIds.value).add(statement.id);
+    return;
+  }
+
+  showQuestion();
+  courseStore.toSpecificStatement(index);
+}
+
+function setWordItemRef(
+  statementId: string,
+  element: Element | ComponentPublicInstance | null,
+) {
+  if (element instanceof HTMLElement) {
+    wordItemElements.set(statementId, element);
+  } else {
+    wordItemElements.delete(statementId);
+  }
 }
 
 watch(
@@ -89,6 +122,19 @@ watch(
   () => {
     manuallyRevealedIds.value = new Set();
   },
+);
+
+watch(
+  () => courseStore.currentStatement?.id,
+  async (statementId) => {
+    if (!statementId) return;
+    await nextTick();
+    wordItemElements.get(statementId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  },
+  { flush: "post", immediate: true },
 );
 </script>
 
@@ -111,6 +157,8 @@ watch(
 
 .word-list {
   @apply divide-y divide-gray-100 dark:divide-gray-800;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
 }
 
 .word-item {
@@ -128,8 +176,9 @@ watch(
   position: absolute;
   top: 0.6rem;
   bottom: 0.6rem;
-  right: -0.75rem;
-  width: 2px;
+  right: 0;
+  z-index: 2;
+  width: 3px;
   content: "";
 }
 
@@ -165,6 +214,11 @@ watch(
 
 .word-lock {
   @apply absolute inset-0 flex flex-col items-center justify-center bg-white/70 text-[10px] font-medium text-gray-500 backdrop-blur-[1px] dark:bg-theme-dark/70 dark:text-gray-300;
+  z-index: 1;
+}
+
+.word-lock.is-current-lock {
+  @apply bg-fuchsia-50/90 text-fuchsia-700 dark:bg-fuchsia-950/70 dark:text-fuchsia-200;
 }
 
 .word-lock span:last-child {

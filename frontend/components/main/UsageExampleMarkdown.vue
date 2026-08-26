@@ -21,9 +21,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   source: string;
-}>();
+  defaultLanguage?: string;
+}>(), {
+  defaultLanguage: "text",
+});
 
 interface MarkdownBlock {
   type: "text" | "code";
@@ -31,9 +34,9 @@ interface MarkdownBlock {
   language: string;
 }
 
-const blocks = computed(() => parseUsageExample(props.source));
+const blocks = computed(() => parseUsageExample(props.source, props.defaultLanguage));
 
-function parseUsageExample(source: string): MarkdownBlock[] {
+function parseUsageExample(source: string, defaultLanguage: string): MarkdownBlock[] {
   const fencePattern = /```([\w+-]*)\s*\n([\s\S]*?)```/g;
   const parsed: MarkdownBlock[] = [];
   let cursor = 0;
@@ -45,7 +48,7 @@ function parseUsageExample(source: string): MarkdownBlock[] {
     pushTextBlock(parsed, source.slice(cursor, match.index));
     parsed.push({
       type: "code",
-      language: match[1] || "text",
+      language: match[1] || defaultLanguage,
       content: match[2].replace(/\s+$/, ""),
     });
     cursor = fencePattern.lastIndex;
@@ -53,7 +56,7 @@ function parseUsageExample(source: string): MarkdownBlock[] {
 
   if (!foundFence) {
     return source.trim()
-      ? [{ type: "code", language: "text", content: source.trim() }]
+      ? [{ type: "code", language: defaultLanguage, content: source.trim() }]
       : [];
   }
 

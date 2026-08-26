@@ -72,7 +72,10 @@
           <span class="summary-hint">追根究底</span>
         </summary>
         <div class="details-content source-details">
-          <pre><code>{{ currentItem.referenceCode }}</code></pre>
+          <UsageExampleMarkdown
+            :source="currentItem.referenceCode"
+            default-language="java"
+          />
         </div>
       </details>
 
@@ -184,7 +187,7 @@ async function saveNote() {
 
 <style scoped>
 .annotation-panel {
-  @apply flex h-full flex-col border-l border-gray-200 bg-white pl-4 dark:border-gray-700 dark:bg-theme-dark;
+  @apply flex h-full flex-col bg-white pl-4 dark:bg-theme-dark;
   min-height: 0;
   overflow: hidden;
 }
@@ -254,10 +257,6 @@ async function saveNote() {
 
 .details-content h6 {
   @apply mb-1 text-xs font-semibold text-fuchsia-600 dark:text-fuchsia-300;
-}
-
-.source-details pre {
-  @apply mb-3 overflow-x-auto bg-gray-900 p-3 text-xs leading-5 text-green-300;
 }
 
 .source-explanation {

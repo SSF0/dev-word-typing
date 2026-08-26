@@ -151,6 +151,14 @@ describe("practice workspace detail panel", () => {
     );
   });
 
+  it("constrains the related-word rail at regular desktop widths so it scrolls locally", () => {
+    const baseStyles = workspaceSource.split("@media (min-width: 1280px)")[0];
+
+    expect(baseStyles).toMatch(
+      /\.practice-word-column\s*\{[\s\S]*?height: calc\(100dvh - 8rem\);[\s\S]*?max-height: calc\(100dvh - 8rem\);/,
+    );
+  });
+
   it("uses a centered inline detail at wide viewports and a drawer below that", () => {
     expect(workspaceSource).toMatch(
       /@media \(min-width: 1700px\)[\s\S]*?\.is-detail-open \.practice-track\s*\{[\s\S]*?width: var\(--open-workspace-width\);/,
@@ -162,7 +170,7 @@ describe("practice workspace detail panel", () => {
       /@media \(min-width: 1700px\)[\s\S]*?\.detail-panel\s*\{[\s\S]*?transform: none;/,
     );
     expect(workspaceSource).toMatch(
-      /@media \(min-width: 1700px\)[\s\S]*?\.practice-word-column\s*\{[\s\S]*?height: calc\(100dvh - 8rem\);/,
+      /@media \(min-width: 1700px\)[\s\S]*?\.is-detail-open \.detail-panel\s*\{[\s\S]*?height: calc\(100dvh - 8rem\);/,
     );
   });
 

@@ -2,6 +2,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
 import AnnotationPanel from "../AnnotationPanel.vue";
+import annotationPanelSource from "../AnnotationPanel.vue?raw";
 
 const mocks = vi.hoisted(() => {
   return {
@@ -89,6 +90,17 @@ describe("AnnotationPanel", () => {
     expect(code.text()).toContain("public class UserController { } // 定义用户控制器");
   });
 
+  it("renders reference source through the same Markdown code-block renderer", () => {
+    const wrapper = mount(AnnotationPanel);
+    const source = wrapper.get('[data-test="annotation-source"]');
+
+    expect(source.find(".usage-example-markdown").exists()).toBe(true);
+    const code = source.get('code[data-language="java"]');
+    expect(code.classes()).toContain("language-java");
+    expect(code.text()).toContain("@Controller");
+    expect(code.text()).toContain("@ResponseBody");
+  });
+
   it("lets the note editor and save action fill the remaining detail space", () => {
     const wrapper = mount(AnnotationPanel);
     const body = wrapper.get(".annotation-body");
@@ -105,6 +117,16 @@ describe("AnnotationPanel", () => {
     );
     expect(saveButton.classes()).toContain("w-full");
     expect((textarea.element as HTMLTextAreaElement).value).toBe("当前注解笔记");
+  });
+
+  it("does not draw another left border inside the detached detail panel", () => {
+    const styleBlock = annotationPanelSource.match(
+      /\.annotation-panel\s*\{[\s\S]*?\}/,
+    )?.[0];
+
+    expect(styleBlock).toBeDefined();
+    expect(styleBlock).not.toContain("border-l");
+    expect(styleBlock).not.toContain("dark:border-gray-700");
   });
 
   it("saves a note on the current learning item", async () => {
