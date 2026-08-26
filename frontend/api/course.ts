@@ -6,7 +6,12 @@ export interface StatementApiResponse {
   order: number;
   chinese: string;
   english: string;
+  prefix?: string;
   soundmark: string;
+  explanation?: string;
+  usageExample?: string;
+  referenceCode?: string;
+  note?: string;
   isMastered: boolean;
 }
 
@@ -61,4 +66,21 @@ export async function updateCourseNote(coursePackId: string, courseId: string, n
     method: "put",
     body: { note },
   })) as Course;
+}
+
+/** 保存当前小节中某个练习项的个人笔记。 */
+export async function updateStatementNote(
+  coursePackId: string,
+  courseId: string,
+  statementId: string,
+  note: string,
+) {
+  const http = getHttp();
+  return await http<StatementApiResponse>(
+    `/course-pack/${coursePackId}/courses/${courseId}/statements/${statementId}`,
+    {
+      method: "put",
+      body: { note },
+    },
+  );
 }

@@ -1,6 +1,12 @@
 <template>
   <div class="text-center">
     <div class="relative flex flex-wrap justify-center gap-2 transition-all">
+      <span
+        v-if="courseStore.currentStatement?.prefix"
+        class="statement-prefix h-[4rem] select-none text-[3em] leading-none text-gray-500 dark:text-gray-300"
+        aria-hidden="true"
+        data-test="statement-prefix"
+      >{{ courseStore.currentStatement.prefix }}</span>
       <template
         v-for="(w, i) in courseStore.words"
         :key="i"

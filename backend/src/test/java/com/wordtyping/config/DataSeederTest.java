@@ -15,40 +15,78 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DataSeederTest {
 
     @Test
-    void refreshesBuiltInLearningGuidesWithoutReplacingPersonalNotes() {
-        var controller = node("@Controller", "旧说明", "记住我自己的笔记");
-        controller.getStatements().addAll(List.of(
-                statement(controller, 0, "controller", "旧解释", true),
-                statement(controller, 1, "receive", "旧解释", false),
-                statement(controller, 2, "request", "旧解释", false),
-                statement(controller, 3, "handler", "旧解释", true),
-                statement(controller, 4, "annotate", "旧解释", false),
-                statement(controller, 5, "component", "旧解释", false)
-        ));
-        var restController = node("@RestController", "旧说明", null);
-        var autowired = node("@Autowired", "旧说明", null);
-        var stack = new TechStack();
-        stack.getNodes().addAll(List.of(controller, restController, autowired));
+    void migratesLegacyAnnotationNodesIntoThreeOrderedLearningSections() {
+        var stack = javaStackWithLegacyNodes();
         var savedStacks = new AtomicReference<List<TechStack>>();
         var stackRepo = repositoryWithExistingStack(stack, savedStacks);
 
         new DataSeeder(stackRepo).run();
 
-        assertThat(controller.getAnnotationExplain())
-                .contains("核心作用", "向下展开一层", "常见用法", "源码拆解")
-                .contains("@RequestMapping", "@ResponseBody", "@AliasFor");
-        assertThat(controller.getStatements())
+        assertThat(stack.getNodes())
+                .extracting(Node::getTitle)
+                .containsExactly("Java 常用注解", "MyBatis", "Java 项目结构");
+
+        var annotationSection = section(stack, "Java 常用注解");
+        assertThat(annotationSection.getStatements())
                 .extracting(Statement::getEnglish)
-                .containsExactly("controller", "mapping", "handler", "model", "view", "response");
-        assertThat(controller.getStatements().get(0).isMastered()).isTrue();
-        assertThat(controller.getStatements().get(2).isMastered()).isTrue();
-        assertThat(controller.getStatements().get(1).isMastered()).isFalse();
-        assertThat(restController.getAnnotationExplain())
-                .contains("endpoint", "serialize", "JSON", "response body");
-        assertThat(autowired.getAnnotationExplain())
-                .contains("inject", "dependency", "Bean", "qualifier");
-        assertThat(controller.getNote()).isEqualTo("记住我自己的笔记");
+                .startsWith(
+                        "RestController",
+                        "Controller",
+                        "Service",
+                        "GetMapping",
+                        "PostMapping"
+                );
+        assertThat(annotationSection.getStatements())
+                .allSatisfy(statement -> assertThat(statement.getPrefix()).isEqualTo("@"));
+        assertThat(statement(annotationSection, "RestController").getUsageExample())
+                .contains("@RequestMapping", "@GetMapping", "findById");
+
+        var mybatisSection = section(stack, "MyBatis");
+        assertThat(mybatisSection.getStatements())
+                .extracting(Statement::getEnglish)
+                .startsWith("mapper", "Mapper", "MapperScan", "Select", "Insert");
+        assertThat(statement(mybatisSection, "mapper").getPrefix()).isNull();
+        assertThat(statement(mybatisSection, "Mapper").getPrefix()).isEqualTo("@");
+
+        var structureSection = section(stack, "Java 项目结构");
+        assertThat(structureSection.getStatements())
+                .extracting(Statement::getEnglish)
+                .startsWith("controller", "service", "mapper", "entity", "dto", "config");
+        assertThat(structureSection.getStatements())
+                .allSatisfy(statement -> {
+                    assertThat(statement.getUsageExample())
+                            .doesNotContain("/Users/mac/project/java/learn/")
+                            .contains("\n");
+                });
+
+        assertThat(stack.getNodes())
+                .flatExtracting(Node::getStatements)
+                .allSatisfy(statement -> {
+                    assertThat(statement.getExplanation()).isNotBlank();
+                    assertThat(statement.getUsageExample()).isNotBlank();
+                });
+        assertThat(statement(annotationSection, "Controller").getNote())
+                .isEqualTo("记住我自己的 Controller 笔记");
         assertThat(savedStacks.get()).containsExactly(stack);
+    }
+
+    @Test
+    void refreshIsIdempotentAndPreservesProgressAndStatementNotes() {
+        var stack = javaStackWithLegacyNodes();
+        var savedStacks = new AtomicReference<List<TechStack>>();
+        var stackRepo = repositoryWithExistingStack(stack, savedStacks);
+        var seeder = new DataSeeder(stackRepo);
+        seeder.run();
+        var controller = statement(section(stack, "Java 常用注解"), "Controller");
+        controller.setMastered(true);
+        controller.setNote("迁移后继续记录");
+
+        seeder.run();
+
+        var refreshedController = statement(section(stack, "Java 常用注解"), "Controller");
+        assertThat(refreshedController).isSameAs(controller);
+        assertThat(refreshedController.isMastered()).isTrue();
+        assertThat(refreshedController.getNote()).isEqualTo("迁移后继续记录");
     }
 
     @SuppressWarnings("unchecked")
@@ -72,28 +110,38 @@ class DataSeederTest {
         );
     }
 
-    private Node node(String title, String explain, String note) {
+    private TechStack javaStackWithLegacyNodes() {
+        var stack = new TechStack();
+        stack.setTitle("Java 技术栈");
+        stack.setDescription("旧说明");
+        stack.getNodes().addAll(List.of(
+                legacyNode(stack, "@Controller", "记住我自己的 Controller 笔记"),
+                legacyNode(stack, "@RestController", null),
+                legacyNode(stack, "@Autowired", null)
+        ));
+        return stack;
+    }
+
+    private Node legacyNode(TechStack stack, String title, String note) {
         var node = new Node();
+        node.setStack(stack);
         node.setTitle(title);
-        node.setAnnotationExplain(explain);
+        node.setAnnotationExplain("旧说明");
         node.setNote(note);
         return node;
     }
 
-    private Statement statement(
-            Node node,
-            int order,
-            String english,
-            String chinese,
-            boolean mastered
-    ) {
-        var statement = new Statement();
-        statement.setNode(node);
-        statement.setSortOrder(order);
-        statement.setEnglish(english);
-        statement.setChinese(chinese);
-        statement.setSoundmark("");
-        statement.setMastered(mastered);
-        return statement;
+    private Node section(TechStack stack, String title) {
+        return stack.getNodes().stream()
+                .filter(node -> title.equals(node.getTitle()))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private Statement statement(Node node, String english) {
+        return node.getStatements().stream()
+                .filter(statement -> english.equals(statement.getEnglish()))
+                .findFirst()
+                .orElseThrow();
     }
 }

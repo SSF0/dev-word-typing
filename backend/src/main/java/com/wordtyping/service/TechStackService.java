@@ -3,9 +3,11 @@ package com.wordtyping.service;
 import com.wordtyping.dto.CoursePackDto;
 import com.wordtyping.dto.CoursePackListItemDto;
 import com.wordtyping.dto.NodeDto;
+import com.wordtyping.dto.StatementDto;
 import com.wordtyping.entity.Node;
 import com.wordtyping.entity.TechStack;
 import com.wordtyping.repository.NodeRepository;
+import com.wordtyping.repository.StatementRepository;
 import com.wordtyping.repository.TechStackRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,10 +20,16 @@ public class TechStackService {
 
     private final TechStackRepository stackRepo;
     private final NodeRepository nodeRepo;
+    private final StatementRepository statementRepo;
 
-    public TechStackService(TechStackRepository stackRepo, NodeRepository nodeRepo) {
+    public TechStackService(
+            TechStackRepository stackRepo,
+            NodeRepository nodeRepo,
+            StatementRepository statementRepo
+    ) {
         this.stackRepo = stackRepo;
         this.nodeRepo = nodeRepo;
+        this.statementRepo = statementRepo;
     }
 
     /** GET /course-pack */
@@ -86,5 +94,26 @@ public class TechStackService {
         node.setNote(note);
         Node saved = nodeRepo.save(node);
         return Assemblers.toNode(saved);
+    }
+
+    /** 保存小节中某个练习项的个人笔记。 */
+    @org.springframework.transaction.annotation.Transactional
+    public StatementDto updateStatementNote(
+            Long stackId,
+            Long nodeId,
+            Long statementId,
+            String note
+    ) {
+        var statement = statementRepo.findById(statementId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statement not found"));
+        var node = statement.getNode();
+        if (node == null
+                || !statement.getNodeId().equals(nodeId)
+                || !node.getStackId().equals(stackId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "statement not in course");
+        }
+
+        statement.setNote(note);
+        return Assemblers.toStatement(statementRepo.save(statement));
     }
 }

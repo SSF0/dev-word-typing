@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
 import AnnotationPanel from "../AnnotationPanel.vue";
@@ -9,15 +9,22 @@ const mocks = vi.hoisted(() => {
       currentCourse: {
         id: "course-1",
         coursePackId: "pack-1",
-        title: "@Controller",
+        title: "Java 常用注解",
         practiceType: "WORD",
-        annotationExplain:
-          "## 核心作用\n@Controller 把一个类标记为 Spring MVC 控制器。\n\n## 向下展开一层\n@RequestMapping 负责映射，handler method 负责处理。\n\n## 常见用法\n控制器通常调用 Service，返回视图名或响应体。\n\n## 源码拆解\n@Target(TYPE)：只能标在类型上。\n@Retention(RUNTIME)：运行时仍然保留。",
-        annotationCode:
-          "@Target({ElementType.TYPE})\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface Controller {}",
-        note: "",
+      },
+      currentStatement: {
+        id: "statement-1",
+        prefix: "@",
+        english: "RestController",
+        chinese: "REST 控制器；接收请求并返回 JSON",
+        explanation:
+          "## 核心作用\n@RestController 让方法返回值直接写入响应体。\n\n## 使用要点\nController 只调用 Service 并组织响应。",
+        usageExample: "@RestController\npublic class UserController { }",
+        referenceCode: "@Controller\n@ResponseBody",
+        note: "当前注解笔记",
       },
     },
+    updateStatementNote: vi.fn(),
   };
 });
 
@@ -26,7 +33,7 @@ vi.mock("~/store/course", () => ({
 }));
 
 vi.mock("~/api/course", () => ({
-  updateCourseNote: vi.fn(),
+  updateStatementNote: mocks.updateStatementNote,
 }));
 
 vi.mock("vue-sonner", () => ({
@@ -34,13 +41,15 @@ vi.mock("vue-sonner", () => ({
 }));
 
 describe("AnnotationPanel", () => {
-  it("keeps the essential explanation visible and leaves related words outside", () => {
+  it("shows details for the current learning item instead of the whole section", () => {
     const wrapper = mount(AnnotationPanel);
 
+    expect(wrapper.get('[data-test="detail-term"]').text()).toContain("@RestController");
     const sections = wrapper.findAll('[data-test="learning-section"]');
     expect(sections).toHaveLength(2);
     expect(sections[0].text()).toContain("核心作用");
-    expect(sections[1].text()).toContain("向下展开一层");
+    expect(sections[0].text()).toContain("直接写入响应体");
+    expect(sections[1].text()).toContain("使用要点");
     expect(wrapper.find('[data-test="learning-keywords"]').exists()).toBe(false);
   });
 
@@ -51,12 +60,21 @@ describe("AnnotationPanel", () => {
 
     expect(usage.element.tagName).toBe("DETAILS");
     expect(usage.attributes("open")).toBeUndefined();
-    expect(usage.text()).toContain("常见用法");
+    expect(usage.text()).toContain("public class UserController");
     expect(source.element.tagName).toBe("DETAILS");
     expect(source.attributes("open")).toBeUndefined();
-    expect(source.text()).toContain("@Target({ElementType.TYPE})");
-    expect(source.text()).toContain("源码拆解");
-    expect(source.text()).toContain("只能标在类型上");
+    expect(source.text()).toContain("@Controller");
+    expect(source.text()).toContain("@ResponseBody");
+  });
+
+  it("uses the 使用示例 label without exposing a related project location", () => {
+    const wrapper = mount(AnnotationPanel);
+
+    const usage = wrapper.get('[data-test="usage-example"]');
+    expect(usage.text()).toContain("使用示例");
+    expect(usage.text()).not.toContain("使用实例");
+    expect(usage.text()).toContain("public class UserController");
+    expect(wrapper.find('[data-test="project-path"]').exists()).toBe(false);
   });
 
   it("lets the note editor and save action fill the remaining detail space", () => {
@@ -74,5 +92,25 @@ describe("AnnotationPanel", () => {
       expect.arrayContaining(["min-h-28", "flex-1", "resize-none"]),
     );
     expect(saveButton.classes()).toContain("w-full");
+    expect((textarea.element as HTMLTextAreaElement).value).toBe("当前注解笔记");
+  });
+
+  it("saves a note on the current learning item", async () => {
+    mocks.updateStatementNote.mockResolvedValue({
+      ...mocks.courseStore.currentStatement,
+      note: "新的理解",
+    });
+    const wrapper = mount(AnnotationPanel);
+
+    await wrapper.get("textarea").setValue("新的理解");
+    await wrapper.get("button.btn-primary").trigger("click");
+    await flushPromises();
+
+    expect(mocks.updateStatementNote).toHaveBeenCalledWith(
+      "pack-1",
+      "course-1",
+      "statement-1",
+      "新的理解",
+    );
   });
 });

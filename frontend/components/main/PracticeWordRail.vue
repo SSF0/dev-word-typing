@@ -1,11 +1,11 @@
 <template>
   <aside
     class="practice-word-rail flex h-full min-h-0 flex-col overflow-hidden border-r border-gray-200 pr-3 dark:border-gray-700"
-    aria-label="相关练习词"
+    aria-label="本节练习内容"
     data-test="practice-word-rail"
   >
     <div class="word-rail-heading">
-      <h5>相关词</h5>
+      <h5>本节内容</h5>
       <p>答对解锁 · 点击可看</p>
     </div>
 
@@ -16,7 +16,7 @@
         type="button"
         class="word-item flex h-16 shrink-0 items-center px-3"
         :class="{ 'is-current': isCurrentStatement(statement) }"
-        :aria-label="isKeywordRevealed(statement) ? `${statement.english} 已显示` : '显示这个练习词'"
+        :aria-label="isKeywordRevealed(statement) ? `${displayTerm(statement)} 已显示` : '显示这个练习词'"
         :aria-pressed="isKeywordRevealed(statement)"
         :data-active="isCurrentStatement(statement)"
         :data-revealed="isKeywordRevealed(statement)"
@@ -29,7 +29,7 @@
           data-test="keyword-content"
         >
           <span class="word-title-row">
-            <span class="word-title">{{ statement.english }}</span>
+            <span class="word-title">{{ displayTerm(statement) }}</span>
             <span
               v-if="courseStore.isStatementUnlocked(statement.id)"
               class="word-state is-unlocked"
@@ -67,6 +67,10 @@ const learningStatements = computed(() => courseStore.currentCourse?.statements 
 
 function isCurrentStatement(statement: Statement) {
   return statement.id === courseStore.currentStatement?.id;
+}
+
+function displayTerm(statement: Statement) {
+  return `${statement.prefix ?? ""}${statement.english}`;
 }
 
 function isKeywordRevealed(statement: Statement) {

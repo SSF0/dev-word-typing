@@ -5,6 +5,9 @@ import { useWrapperQuestionInput } from "../useWrapperQuestionInput";
 const mocks = vi.hoisted(() => ({
   unlockCurrentStatement: vi.fn(),
   showAnswer: vi.fn(),
+  playSound: vi.fn(),
+  handleKeyboardInput: vi.fn(),
+  fixMode: false,
 }));
 
 vi.mock("~/store/course", () => ({
@@ -24,8 +27,8 @@ vi.mock("~/composables/main/question", () => ({
     inputValue: { value: "" },
     submitAnswer: (correctCallback?: () => void) => correctCallback?.(),
     setInputValue: vi.fn(),
-    handleKeyboardInput: vi.fn(),
-    isFixMode: () => false,
+    handleKeyboardInput: mocks.handleKeyboardInput,
+    isFixMode: () => mocks.fixMode,
     isFixInputMode: () => false,
   }),
 }));
@@ -54,6 +57,10 @@ vi.mock("~/composables/user/submitKey", () => ({
   useSpaceSubmitAnswer: () => ({ isUseSpaceSubmitAnswer: () => false }),
 }));
 
+vi.mock("~/composables/main/englishSound", () => ({
+  useCurrentStatementEnglishSound: () => ({ playSound: mocks.playSound }),
+}));
+
 vi.mock("../questionInputHelper", () => ({
   useQuestionInput: () => ({
     setInputCursorPosition: vi.fn(),
@@ -75,6 +82,7 @@ vi.mock("../useTypingSound", () => ({
 describe("useWrapperQuestionInput word unlock", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.fixMode = false;
   });
 
   it("unlocks the current related word after a correct submission", () => {
@@ -84,5 +92,16 @@ describe("useWrapperQuestionInput word unlock", () => {
 
     expect(mocks.unlockCurrentStatement).toHaveBeenCalledOnce();
     expect(mocks.showAnswer).toHaveBeenCalledOnce();
+  });
+
+  it("replays the English word when the learner starts correcting a wrong answer", () => {
+    mocks.fixMode = true;
+    const questionInput = useWrapperQuestionInput();
+    const event = new KeyboardEvent("keydown", { key: "r", code: "KeyR" });
+
+    questionInput.handleKeyboardInput(event);
+
+    expect(mocks.playSound).toHaveBeenCalledOnce();
+    expect(mocks.handleKeyboardInput).toHaveBeenCalledWith(event, expect.any(Object));
   });
 });

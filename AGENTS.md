@@ -3,12 +3,12 @@
 > 接手的 AI / 开发者，**先读本文件获取入口**。核心与技术细节见 `docs/`。
 
 ## 一句话定位
-给程序员**反复练单词**的工具：技术栈 → 知识点节点（注解/配置）→ 中文释义打**英文单词**，侧栏看该节点源码 + 写个人笔记。
+给程序员**反复练单词**的工具：技术栈 → 小节（注解/MyBatis/项目结构）→ 关键术语，依据中文释义打**英文单词**，侧栏查看当前术语的用法并写个人笔记。
 
 ## 核心思想（别做偏）
 - 核心是**练单词/技术术语**，不是「整句造句」——决定前先看 `practiceType`。
-- `practiceType=WORD`：节点内 statements 为**多个待打单词**，`english=单词`、`chinese=中文释义`，用「中译英」模式（不是听写）。
-- 每个节点 = 一份**注解/源码实现**（`annotationCode`），侧栏展示；节点可写 **note 笔记**入库。
+- `practiceType=WORD`：小节内 statements 为**多个待打术语**，`english=实际输入和发音的英文`、`prefix=固定展示但不参与输入的前缀（可选）`、`chinese=中文释义`，用「中译英」模式（不是听写）。
+- 每个 statement = 一个可复习知识项，独立携带 `explanation`、`usageExample`、`referenceCode` 和 `note`；侧栏始终展示当前 statement 的详情。
 
 ## 📄 详细请看 docs/
 - **[核心思想 / 技术栈 / 数据模型 / API / 当前进度 / 注意事项](./docs/project-overview.md)**
@@ -18,7 +18,7 @@
 - 前端 **Nuxt3 (Vue3) + Pinia + Tailwind/daisyUI**（照搬 earthworm`apps/client`再裁剪）；后端 **Spring Boot3 (Java17) + JPA**；DB **MySQL 8.4**（Docker `springboot-learn-mysql`，root 空密码，库 `word_typing`）。
 - Java17 路径：`/Users/mac/解释器/java/Contents/Home`；前端版本锁定 `nuxt 3.12.1` / `vue 3.4.29`。
 - 端口：本前端 `3002/3003`，后端 `8080`（**别撞 earthworm 的 3000/3001/3010**）。
-- 数据库改结构后 `DROP DATABASE word_typing` 重 seed（`DataSeeder` count>0 不重跑）。
+- `DataSeeder` 会幂等刷新内置 Java 小节；JPA `ddl-auto=update` 自动补充新增字段。
 - 已 push GitHub 公开仓库 `SSF0/dev-word-typing`（main）。
 
 ## ⚙️ 常用命令

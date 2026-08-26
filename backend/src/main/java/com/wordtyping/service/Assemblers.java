@@ -58,7 +58,12 @@ public final class Assemblers {
                 st.getSortOrder(),
                 st.getChinese(),
                 st.getEnglish(),
+                st.getPrefix(),
                 st.getSoundmark(),
+                st.getExplanation(),
+                st.getUsageExample(),
+                st.getReferenceCode(),
+                st.getNote(),
                 st.isMastered()
         );
     }

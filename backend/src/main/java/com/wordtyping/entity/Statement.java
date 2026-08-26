@@ -22,8 +22,23 @@ public class Statement {
     @Column(name = "english", columnDefinition = "TEXT", nullable = false)
     private String english;
 
+    @Column(name = "term_prefix", length = 32)
+    private String prefix;
+
     @Column(length = 512)
     private String soundmark;
+
+    @Column(name = "explanation", columnDefinition = "TEXT")
+    private String explanation;
+
+    @Column(name = "usage_example", columnDefinition = "TEXT")
+    private String usageExample;
+
+    @Column(name = "reference_code", columnDefinition = "TEXT")
+    private String referenceCode;
+
+    @Column(name = "note", columnDefinition = "TEXT")
+    private String note;
 
     @Column(name = "is_mastered", nullable = false)
     private boolean mastered = false;
@@ -47,8 +62,23 @@ public class Statement {
     public String getEnglish() { return english; }
     public void setEnglish(String english) { this.english = english; }
 
+    public String getPrefix() { return prefix; }
+    public void setPrefix(String prefix) { this.prefix = prefix; }
+
     public String getSoundmark() { return soundmark; }
     public void setSoundmark(String soundmark) { this.soundmark = soundmark; }
+
+    public String getExplanation() { return explanation; }
+    public void setExplanation(String explanation) { this.explanation = explanation; }
+
+    public String getUsageExample() { return usageExample; }
+    public void setUsageExample(String usageExample) { this.usageExample = usageExample; }
+
+    public String getReferenceCode() { return referenceCode; }
+    public void setReferenceCode(String referenceCode) { this.referenceCode = referenceCode; }
+
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 
     public boolean isMastered() { return mastered; }
     public void setMastered(boolean mastered) { this.mastered = mastered; }

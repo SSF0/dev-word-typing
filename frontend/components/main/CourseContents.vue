@@ -42,7 +42,7 @@
               <div
                 class="truncate text-lg font-bold text-purple-800 group-hover:text-clip group-hover:whitespace-normal dark:text-white"
               >
-                {{ item.english }}
+                {{ item.prefix }}{{ item.english }}
               </div>
               <div
                 class="truncate text-lg text-purple-600 group-hover:text-clip group-hover:whitespace-normal dark:text-purple-300"

@@ -2,6 +2,10 @@
   <div class="text-center">
     <div class="ml-8 inline-flex flex-wrap items-center justify-center gap-1 text-5xl">
       <span
+        v-if="courseStore.currentStatement?.prefix"
+        class="select-none p-1 text-gray-500 dark:text-gray-300"
+      >{{ courseStore.currentStatement.prefix }}</span>
+      <span
         v-for="word in words"
         :key="word"
         class="cursor-pointer p-1 hover:text-fuchsia-500"

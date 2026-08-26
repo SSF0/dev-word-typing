@@ -1,5 +1,6 @@
 import { courseTimer } from "~/composables/courses/courseTimer";
 import { useGameMode } from "~/composables/main/game";
+import { useCurrentStatementEnglishSound } from "~/composables/main/englishSound";
 import { useInput } from "~/composables/main/question";
 import { useSummary } from "~/composables/main/summary";
 import { useAutoNextQuestion } from "~/composables/user/autoNext";
@@ -22,6 +23,7 @@ export function useWrapperQuestionInput() {
   const { playRightSound } = usePlayTipSound();
   const { isAutoNextQuestion } = useAutoNextQuestion();
   const { isUseSpaceSubmitAnswer } = useSpaceSubmitAnswer();
+  const { playSound } = useCurrentStatementEnglishSound();
 
   const {
     initialize: initializeQuestionInput,
@@ -74,6 +76,9 @@ export function useWrapperQuestionInput() {
       focusInput();
     },
     handleKeyboardInput(e: KeyboardEvent) {
+      if (isFixMode()) {
+        playSound();
+      }
       handleKeyboardInput(e, {
         useSpaceSubmitAnswer: {
           enable: isUseSpaceSubmitAnswer(),

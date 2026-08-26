@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => {
   const statements = [
     {
       id: "statement-1",
+      prefix: "@",
       english: "controller",
       chinese: "控制器；接收请求并协调处理",
     },
@@ -51,6 +52,8 @@ describe("PracticeWordRail", () => {
     const keywords = wrapper.findAll('[data-test="learning-keyword"]');
 
     expect(rail.classes()).toContain("practice-word-rail");
+    expect(rail.text()).toContain("本节内容");
+    expect(rail.text()).not.toContain("相关词");
     expect(keywords).toHaveLength(3);
     expect(keywords[0].attributes("data-active")).toBe("true");
     expect(keywords[0].attributes("data-revealed")).toBe("false");
@@ -109,6 +112,7 @@ describe("PracticeWordRail", () => {
 
     expect(currentKeyword.attributes("data-revealed")).toBe("true");
     expect(currentKeyword.text()).toContain("已解锁");
+    expect(currentKeyword.text()).toContain("@controller");
     expect(currentKeyword.get('[data-test="keyword-content"]').classes()).not.toContain(
       "is-blurred",
     );

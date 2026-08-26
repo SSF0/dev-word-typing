@@ -5,7 +5,12 @@ public record StatementDto(
         Integer order,
         String chinese,
         String english,
+        String prefix,
         String soundmark,
+        String explanation,
+        String usageExample,
+        String referenceCode,
+        String note,
         boolean isMastered
 ) {
 }

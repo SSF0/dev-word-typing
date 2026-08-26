@@ -1,16 +1,24 @@
 <template>
   <div class="annotation-panel">
     <header class="annotation-header">
-      <div class="flex items-center gap-2">
-        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300">
+      <div class="min-w-0">
+        <div class="mb-0.5 text-[10px] text-gray-400">
           {{ courseStore.currentCourse?.title }}
-        </h4>
-        <span
-          class="badge badge-sm"
-          :class="isWordMode ? 'badge-primary' : 'badge-outline'"
-        >
-          {{ isWordMode ? "单词" : "整句" }}
-        </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <h4
+            class="truncate text-sm font-bold text-gray-700 dark:text-gray-300"
+            data-test="detail-term"
+          >
+            {{ currentItem ? `${currentItem.prefix ?? ""}${currentItem.english}` : "" }}
+          </h4>
+          <span
+            class="badge badge-sm"
+            :class="isWordMode ? 'badge-primary' : 'badge-outline'"
+          >
+            {{ isWordMode ? "单词" : "整句" }}
+          </span>
+        </div>
       </div>
       <button
         class="btn btn-ghost btn-xs"
@@ -41,41 +49,30 @@
       </section>
 
       <details
-        v-if="usageSection"
+        v-if="currentItem?.usageExample"
         class="annotation-details"
         data-test="usage-example"
       >
         <summary>
-          <span>使用实例</span>
+          <span>使用示例</span>
           <span class="summary-hint">需要时展开</span>
         </summary>
-        <div class="details-content">
-          <h6>{{ usageSection.title }}</h6>
-          <p>{{ usageSection.body }}</p>
+        <div class="details-content source-details">
+          <pre><code>{{ currentItem.usageExample }}</code></pre>
         </div>
       </details>
 
       <details
-        v-if="courseStore.currentCourse?.annotationCode || sourceSection"
+        v-if="currentItem?.referenceCode"
         class="annotation-details"
         data-test="annotation-source"
       >
         <summary>
-          <span>注解源码与实现</span>
+          <span>参考源码与实现</span>
           <span class="summary-hint">追根究底</span>
         </summary>
         <div class="details-content source-details">
-          <pre
-            v-if="courseStore.currentCourse?.annotationCode"
-          ><code>{{ courseStore.currentCourse.annotationCode }}</code></pre>
-
-          <div
-            v-if="sourceSection"
-            class="source-explanation"
-          >
-            <h6>{{ sourceSection.title }}</h6>
-            <p>{{ sourceSection.body }}</p>
-          </div>
+          <pre><code>{{ currentItem.referenceCode }}</code></pre>
         </div>
       </details>
 
@@ -87,7 +84,7 @@
           v-model="noteDraft"
           rows="2"
           class="textarea textarea-bordered min-h-28 w-full flex-1 resize-none text-xs"
-          placeholder="记录你对这个知识点的理解、踩坑或心得..."
+          placeholder="记录你对这个单词的理解、踩坑或心得..."
         ></textarea>
         <div class="mt-2 flex shrink-0 flex-col gap-1.5">
           <span
@@ -111,7 +108,7 @@
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 
-import { updateCourseNote } from "~/api/course";
+import { updateStatementNote } from "~/api/course";
 import { useCourseStore } from "~/store/course";
 
 const emit = defineEmits<{
@@ -124,20 +121,8 @@ const saving = ref(false);
 const saved = ref(false);
 
 const isWordMode = computed(() => courseStore.currentCourse?.practiceType === "WORD");
-const guideSections = computed(() => parseGuide(courseStore.currentCourse?.annotationExplain));
-const sourceSection = computed(() =>
-  guideSections.value.find((section) => section.title.includes("源码")),
-);
-const usageSection = computed(() =>
-  guideSections.value.find(
-    (section) => section.title.includes("用法") || section.title.includes("实例"),
-  ),
-);
-const conceptSections = computed(() =>
-  guideSections.value.filter(
-    (section) => section !== sourceSection.value && section !== usageSection.value,
-  ),
-);
+const currentItem = computed(() => courseStore.currentStatement);
+const conceptSections = computed(() => parseGuide(currentItem.value?.explanation));
 
 interface GuideSection {
   title: string;
@@ -162,9 +147,9 @@ function parseGuide(value?: string): GuideSection[] {
 }
 
 watch(
-  () => courseStore.currentCourse?.note,
-  (note) => {
-    noteDraft.value = note ?? "";
+  () => courseStore.currentStatement?.id,
+  () => {
+    noteDraft.value = courseStore.currentStatement?.note ?? "";
     saved.value = false;
   },
   { immediate: true },
@@ -172,13 +157,19 @@ watch(
 
 async function saveNote() {
   const course = courseStore.currentCourse;
-  if (!course) return;
+  const statement = courseStore.currentStatement;
+  if (!course || !statement) return;
 
   saving.value = true;
   try {
-    const updated = await updateCourseNote(course.coursePackId, course.id, noteDraft.value);
-    if (courseStore.currentCourse) {
-      courseStore.currentCourse.note = updated.note;
+    const updated = await updateStatementNote(
+      course.coursePackId,
+      course.id,
+      statement.id,
+      noteDraft.value,
+    );
+    if (courseStore.currentStatement?.id === statement.id) {
+      courseStore.currentStatement.note = updated.note;
     }
     saved.value = true;
     toast.success("笔记已保存");

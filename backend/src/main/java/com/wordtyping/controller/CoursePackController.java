@@ -45,4 +45,15 @@ public class CoursePackController {
         String note = (req == null) ? "" : (req.note() == null ? "" : req.note());
         return service.updateNodeNote(stackId, nodeId, note);
     }
+
+    @PutMapping("/{stackId}/courses/{nodeId}/statements/{statementId}")
+    public com.wordtyping.dto.StatementDto updateStatementNote(
+            @PathVariable Long stackId,
+            @PathVariable Long nodeId,
+            @PathVariable Long statementId,
+            @RequestBody(required = false) com.wordtyping.dto.UpdateStatementNoteRequest req
+    ) {
+        String note = (req == null || req.note() == null) ? "" : req.note();
+        return service.updateStatementNote(stackId, nodeId, statementId, note);
+    }
 }

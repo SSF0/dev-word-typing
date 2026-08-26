@@ -5,18 +5,18 @@
 
 ## 一、一句话定位
 
-**一套面向程序员的「技术栈单词练习」工具**：以「技术栈 → 知识点(注解/配置)节点」为纲，中文释义 → 打英文单词/句子的打字练习，练习页展示节点源码，支持个人笔记。
+**一套面向程序员的「技术栈单词练习」工具**：以「技术栈 → 小节 → 关键术语」为纲，中文释义 → 打英文术语，练习页展示当前术语的解释、示例和源码，支持逐词记录个人笔记。
 
 ## 二、核心思想（最重要，别做偏）
 
 地址：承接自 earthworm 的「打字练习核心」，做给程序员**反复练单词**：
 
 - **练的是「单词 / 技术术语」，不是「整句造句」**。
-  - Java 技术栈：每个节点 = 一个注解（如 `@Controller`），点进去是**反复打该注解相关的英文单词**（controller、receive、request...）。
+  - Java 技术栈：节点表示小节（如“Java 常用注解”），小节内直接练习 `RestController`、`Service` 等英文术语；`@` 由可配置的固定前缀展示，不参与输入和发音。
   - 部分包（Vite 配置、通用词汇）会有多词短语，一个 input 打一个目标项。
 - **练习交互 = 中文释义提示 → 打英文单词**，用「中译英」模式（**不是听写**）。
-- **每个节点 = 一份注解源码实现**，练习页右侧展示源码 + 使用场景解释。
-- **每个节点可写「个人见解/笔记」**，存后端数据库，随源码一起展示。
+- **每个练习项 = 一份独立知识详情**，练习页右侧展示当前术语的解释、使用示例和参考源码。
+- **每个练习项可写「个人见解/笔记」**，存后端数据库，切换术语时同步切换。
 - 节点卡片/列表展示「单词 / 整句」模式徽标。
 
 ## 三、技术栈
@@ -44,15 +44,17 @@ dev-word-typing/
 
 ```
 tech_stack（技术栈 = course-pack 列表项）
-  └── node（知识点节点 = 前端 course）
+  └── node（小节 = 前端 course）
         ├─ title / description / sortOrder
-        ├─ annotationCode     # 注解/知识点源码（侧栏展示）
-        ├─ annotationExplain  # 源码/用法注释
         ├─ practiceType       # WORD(单词) / SENTENCE(整句) ← 核心字段
-        ├─ note               # 个人笔记（可编辑入库）
         └── statement（练习项）
-              ├─ english    单词（如 controller）或整句
-              └─ chinese    中文释义（练习提示）
+              ├─ english       实际输入和发音的英文（如 RestController、resultMap、controller）
+              ├─ prefix        固定展示前缀（可选，如 @），不参与判题与发音
+              ├─ chinese       中文释义（练习提示）
+              ├─ explanation   核心作用和使用要点
+              ├─ usageExample  可直接理解的完整使用示例
+              ├─ referenceCode 参考源码（可选）
+              └─ note          当前术语的个人笔记
 
   practiceType=WORD: statement.english=单个待打单词, chinese=中文释义
   practiceType=SENTENCE: 保留整句练习
@@ -67,22 +69,24 @@ tech_stack（技术栈 = course-pack 列表项）
 | GET | `/course-pack/{stackId}/courses/{nodeId}` | 单个知识点（statements + 源码 + note）|
 | POST | `/course-pack/{stackId}/courses/{nodeId}/complete` | 完成，返回下一知识点 |
 | PUT | `/course-pack/{stackId}/courses/{nodeId}` | 保存个人笔记 note |
+| PUT | `/course-pack/{stackId}/courses/{nodeId}/statements/{statementId}` | 保存当前练习项的个人笔记 |
 
 ## 七、前端页面流程（复用 earthwork）
 
 ```
 /course-pack            技术栈列表（包）
-  → /course-pack/{id}   知识点节点列表（节点卡片，显示「单词/整句」徽标 + 单词数）
-  → /game/{pack}/{node} 打字练习：左上中文释义，逐字母打英文，右侧源码+笔记
+  → /course-pack/{id}   小节列表（显示「单词/整句」徽标 + 术语数）
+  → /game/{pack}/{node} 打字练习：左侧本节术语，中间中译英，右侧当前术语详情+笔记
 ```
 
 - 打字引擎 `frontend/components/main/QuestionInput/` 复用 earthworm 的 `useInput`：逐词对照、Enter 提交、Fix 修复错词。
+- WORD 模式进入练习项时按现有开关自动朗读英文；答错后开始重新输入时再朗读一次。固定 `prefix` 始终可见，但不会进入答案或语音。
 - `pages/game/[coursePackId]/[id].vue`：WORD 节点进入强制「中译英」模式（不用听写）。
-- `components/main/AnnotationPanel.vue`：右侧侧栏 = 注解源码 + 使用场景 + 笔记编辑（PUT 入库）。
+- `components/main/AnnotationPanel.vue`：右侧侧栏 = 当前练习项解释 + 使用示例 + 参考源码 + 单词笔记。
 
 ## 八、当前进度（✅）
 
-- [x] 后端 Spring Boot 3 + MySQL，三表 + Java 种子（@Controller/@RestController/@Autowired，各 4-6 单词）
+- [x] 后端 Spring Boot 3 + MySQL，Java 种子包含“Java 常用注解、MyBatis、Java 项目结构”三个高频小节
 - [x] 前端照搬 earthworm 流程（列表→详情→练习），去登录/会员/分享
 - [x] WORD 模式（中文释义→打单词）+ 节点卡片模式徽标
 - [x] 侧栏注解源码 + 笔记（可编辑入库）
@@ -93,5 +97,5 @@ tech_stack（技术栈 = course-pack 列表项）
 1. 核心是**练单词，不是练句子** → 做决定前先看 `practiceType`。
 2. **端口别撞 earthworm**：earthworm 前端 3000、后端 3001/3010；本前端建议 3002/3003，后端 8080。
 3. 前端从 earthworm 照搬，改动必须保留「流程样式相同」，改 Nuxt/Vue 版本要谨慎。
-4. 数据库改结构后建议 `DROP DATABASE word_typing` 重新 seed（`DataSeeder` count>0 不重跑）。
+4. `DataSeeder` 会幂等刷新内置 Java 小节并保留同名练习项的掌握状态和笔记；JPA `ddl-auto=update` 负责补充字段。
 5. 别提交 `node_modules/.nuxt/.output/backend/target`（已 gitignore）。
