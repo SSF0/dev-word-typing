@@ -25,6 +25,8 @@
 
     <!-- 右侧 -->
     <div class="flex items-center gap-4">
+      <slot name="actions"></slot>
+
       <div
         @click="openGameSettingModal"
         v-if="isDictationMode()"

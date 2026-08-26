@@ -4,15 +4,7 @@
       <Loading></Loading>
     </template>
     <template v-else>
-      <MainTool />
-      <div class="flex w-full flex-col gap-4 lg:flex-row">
-        <div class="min-w-0 flex-1">
-          <MainGame />
-        </div>
-        <aside class="w-full shrink-0 lg:w-80">
-          <MainAnnotationPanel />
-        </aside>
-      </div>
+      <PracticeWorkspace />
     </template>
   </div>
 </template>
@@ -22,6 +14,7 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { toast } from "vue-sonner";
 
+import PracticeWorkspace from "~/components/main/PracticeWorkspace.vue";
 import { useGameMode } from "~/composables/main/game";
 import { useNavigation } from "~/composables/useNavigation";
 import { GamePlayMode, useGamePlayMode } from "~/composables/user/gamePlayMode";

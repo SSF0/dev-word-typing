@@ -48,6 +48,7 @@ export function useWrapperQuestionInput() {
   function handleAnswerRight() {
     courseTimer.timeEnd(String(courseStore.statementIndex)); // 停止当前题目的计时
     playRightSound();
+    courseStore.unlockCurrentStatement();
 
     if (isAutoNextQuestion()) {
       // 自动下一题

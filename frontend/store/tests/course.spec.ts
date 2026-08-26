@@ -141,6 +141,19 @@ describe("CourseStore", () => {
   });
 
   describe("Progress tracking", () => {
+    it("unlocks the current word for this course session and resets on setup", async () => {
+      expect(courseStore.isStatementUnlocked("1")).toBe(false);
+
+      courseStore.unlockCurrentStatement();
+
+      expect(courseStore.isStatementUnlocked("1")).toBe(true);
+      expect(courseStore.isStatementUnlocked("2")).toBe(false);
+
+      await courseStore.setup("pack1", "1");
+
+      expect(courseStore.isStatementUnlocked("1")).toBe(false);
+    });
+
     it("should correctly identify when all statements are done", () => {
       expect(courseStore.isAllDone()).toBe(false);
       courseStore.toSpecificStatement(4);

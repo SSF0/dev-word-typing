@@ -11,6 +11,7 @@ import { useStatement } from "./statement";
 export const useCourseStore = defineStore("course", () => {
   const currentCourse = ref<Course>();
   const currentStatement = ref<Statement>();
+  const unlockedStatementIds = ref<Set<string>>(new Set());
   const { statementIndex, setupAutoSaveProgress } = useStatement();
   const masteredElementsStore = useMasteredElementsStore();
 
@@ -51,6 +52,17 @@ export const useCourseStore = defineStore("course", () => {
 
   function toSpecificStatement(index: number) {
     statementIndex.value = index;
+  }
+
+  function unlockCurrentStatement() {
+    const statementId = currentStatement.value?.id;
+    if (!statementId) return;
+
+    unlockedStatementIds.value = new Set(unlockedStatementIds.value).add(statementId);
+  }
+
+  function isStatementUnlocked(statementId: string) {
+    return unlockedStatementIds.value.has(statementId);
   }
 
   function findNextUnmasteredIndex(currentIndex: number, direction: 1 | -1) {
@@ -124,6 +136,7 @@ export const useCourseStore = defineStore("course", () => {
   }
 
   async function setup(coursePackId: string, courseId: string) {
+    unlockedStatementIds.value = new Set();
     let course = await fetchCourse(coursePackId, courseId);
 
     course.statements = markMasteredElements(course.statements);
@@ -167,5 +180,7 @@ export const useCourseStore = defineStore("course", () => {
     updateMarketedStatements,
     isLastStatement,
     isAllMastered,
+    unlockCurrentStatement,
+    isStatementUnlocked,
   };
 });
