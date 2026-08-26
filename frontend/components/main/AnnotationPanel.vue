@@ -43,19 +43,31 @@
           :class="{ 'is-primary': index === 0 }"
           data-test="learning-section"
         >
-          <h5>{{ section.title }}</h5>
+          <h5 class="flex items-center gap-1.5">
+            <svg
+              v-if="section.title === '使用要点'"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="h-4 w-4 shrink-0 text-yellow-400"
+              data-test="usage-tip-icon"
+              aria-hidden="true"
+            >
+              <path d="m12 2.5 2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55-4.76-4.64 6.58-.96L12 2.5Z" />
+            </svg>
+            <span>{{ section.title }}</span>
+          </h5>
           <p>{{ section.body }}</p>
         </article>
       </section>
 
       <details
         v-if="currentItem?.usageExample"
+        open
         class="annotation-details"
         data-test="usage-example"
       >
         <summary>
           <span>使用示例</span>
-          <span class="summary-hint">需要时展开</span>
         </summary>
         <div class="details-content source-details">
           <UsageExampleMarkdown :source="currentItem.usageExample" />
@@ -64,6 +76,7 @@
 
       <details
         v-if="currentItem?.referenceCode"
+        open
         class="annotation-details"
         data-test="annotation-source"
       >
@@ -80,27 +93,71 @@
       </details>
 
       <section class="note-section flex min-h-0 flex-1 flex-col">
-        <div class="mb-1 shrink-0 text-xs font-semibold text-gray-500 dark:text-gray-400">
-          我的笔记 / 见解
-        </div>
-        <textarea
-          v-model="noteDraft"
-          rows="2"
-          class="textarea textarea-bordered min-h-28 w-full flex-1 resize-none text-xs"
-          placeholder="记录你对这个单词的理解、踩坑或心得..."
-        ></textarea>
-        <div class="mt-2 flex shrink-0 flex-col gap-1.5">
-          <span
-            v-if="saved"
-            class="self-end text-xs text-green-500"
-          >已保存</span>
+        <div class="mb-2 flex shrink-0 items-center justify-between gap-2">
+          <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+            我的笔记 / 见解
+          </div>
           <button
-            class="btn btn-primary btn-sm w-full"
-            :disabled="saving"
-            @click="saveNote"
+            v-if="hasSavedNote && !editingNote"
+            class="btn btn-ghost btn-xs"
+            type="button"
+            data-test="edit-note"
+            @click="startEditingNote"
           >
-            {{ saving ? "保存中..." : "保存笔记" }}
+            修改笔记
           </button>
+        </div>
+
+        <div
+          v-if="!editingNote"
+          class="note-preview min-h-28 flex-1 overflow-auto rounded-sm border border-gray-200 p-3 dark:border-gray-700"
+          data-test="note-preview"
+        >
+          <NoteMarkdown :source="savedNote" />
+        </div>
+
+        <template v-else>
+          <textarea
+            v-model="noteDraft"
+            rows="2"
+            class="textarea textarea-bordered min-h-28 w-full flex-1 resize-none text-xs leading-5"
+            placeholder="支持 Markdown，可直接记录标题、列表、代码块和心得..."
+          ></textarea>
+          <div class="mt-2 flex shrink-0 items-center gap-2">
+            <label class="btn btn-outline btn-sm cursor-pointer">
+              导入 .md
+              <input
+                class="sr-only"
+                type="file"
+                accept=".md,text/markdown,text/plain"
+                @change="importMarkdownNote"
+              />
+            </label>
+            <button
+              v-if="hasSavedNote"
+              class="btn btn-ghost btn-sm"
+              type="button"
+              data-test="cancel-note-edit"
+              @click="cancelEditingNote"
+            >
+              取消
+            </button>
+            <button
+              class="btn btn-primary btn-sm min-w-0 flex-1"
+              type="button"
+              data-test="save-note"
+              :disabled="saving"
+              @click="saveNote"
+            >
+              {{ saving ? "保存中..." : "保存笔记" }}
+            </button>
+          </div>
+        </template>
+        <div
+          v-if="saved"
+          class="mt-1 shrink-0 text-right text-xs text-green-500"
+        >
+          已保存
         </div>
       </section>
     </div>
@@ -113,6 +170,7 @@ import { toast } from "vue-sonner";
 
 import { updateStatementNote } from "~/api/course";
 import { useCourseStore } from "~/store/course";
+import NoteMarkdown from "./NoteMarkdown.vue";
 import UsageExampleMarkdown from "./UsageExampleMarkdown.vue";
 
 const emit = defineEmits<{
@@ -123,10 +181,14 @@ const courseStore = useCourseStore();
 const noteDraft = ref("");
 const saving = ref(false);
 const saved = ref(false);
+const editingNote = ref(true);
+const persistedNote = ref("");
 
 const isWordMode = computed(() => courseStore.currentCourse?.practiceType === "WORD");
 const currentItem = computed(() => courseStore.currentStatement);
 const conceptSections = computed(() => parseGuide(currentItem.value?.explanation));
+const savedNote = computed(() => persistedNote.value.trim());
+const hasSavedNote = computed(() => savedNote.value.length > 0);
 
 interface GuideSection {
   title: string;
@@ -153,11 +215,50 @@ function parseGuide(value?: string): GuideSection[] {
 watch(
   () => courseStore.currentStatement?.id,
   () => {
-    noteDraft.value = courseStore.currentStatement?.note ?? "";
+    persistedNote.value = courseStore.currentStatement?.note ?? "";
+    noteDraft.value = persistedNote.value;
+    editingNote.value = !noteDraft.value.trim();
     saved.value = false;
   },
   { immediate: true },
 );
+
+function startEditingNote() {
+  noteDraft.value = persistedNote.value;
+  editingNote.value = true;
+  saved.value = false;
+}
+
+function cancelEditingNote() {
+  noteDraft.value = persistedNote.value;
+  editingNote.value = false;
+  saved.value = false;
+}
+
+async function importMarkdownNote(event: Event) {
+  const input = event.currentTarget as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const isMarkdown = file.name.toLowerCase().endsWith(".md")
+    || file.type === "text/markdown"
+    || file.type === "text/plain";
+
+  if (!isMarkdown) {
+    toast.error("请选择 Markdown 文件（.md）");
+    input.value = "";
+    return;
+  }
+
+  try {
+    noteDraft.value = await file.text();
+    saved.value = false;
+  } catch {
+    toast.error("读取 Markdown 文件失败");
+  } finally {
+    input.value = "";
+  }
+}
 
 async function saveNote() {
   const course = courseStore.currentCourse;
@@ -175,6 +276,9 @@ async function saveNote() {
     if (courseStore.currentStatement?.id === statement.id) {
       courseStore.currentStatement.note = updated.note;
     }
+    noteDraft.value = updated.note ?? noteDraft.value;
+    persistedNote.value = noteDraft.value;
+    editingNote.value = !noteDraft.value.trim();
     saved.value = true;
     toast.success("笔记已保存");
   } catch {
@@ -187,7 +291,7 @@ async function saveNote() {
 
 <style scoped>
 .annotation-panel {
-  @apply flex h-full flex-col bg-white pl-4 dark:bg-theme-dark;
+  @apply flex h-full flex-col bg-white px-4 dark:bg-theme-dark;
   min-height: 0;
   overflow: hidden;
 }
@@ -197,7 +301,7 @@ async function saveNote() {
 }
 
 .annotation-body {
-  @apply flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pr-1;
+  @apply flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden;
 }
 
 .learning-guide,
@@ -237,7 +341,7 @@ async function saveNote() {
 .annotation-details summary::after {
   content: "展开";
   float: right;
-  margin-left: 0.5rem;
+  margin-right: 0.75rem;
   color: rgb(156 163 175);
   font-size: 0.65rem;
   font-weight: 400;
@@ -252,7 +356,7 @@ async function saveNote() {
 }
 
 .details-content {
-  @apply pb-3 pl-4;
+  @apply pb-3;
 }
 
 .details-content h6 {

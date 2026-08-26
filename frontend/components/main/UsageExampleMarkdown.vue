@@ -10,16 +10,29 @@
       >
         {{ block.content }}
       </p>
-      <pre v-else><code
+      <pre
+        v-else
+        :class="`language-${block.language}`"
+      ><code
         :class="`language-${block.language}`"
         :data-language="block.language"
-      >{{ block.content }}</code></pre>
+      ><span
+        v-for="(token, tokenIndex) in block.tokens"
+        :key="tokenIndex"
+        :class="token.classes"
+      >{{ token.content }}</span></code></pre>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import Prism from "prismjs";
+import "prismjs/components/prism-java";
+import "prismjs/components/prism-yaml";
+import "prismjs/themes/prism-tomorrow.css";
+
+Prism.manual = true;
 
 const props = withDefaults(defineProps<{
   source: string;
@@ -32,6 +45,12 @@ interface MarkdownBlock {
   type: "text" | "code";
   content: string;
   language: string;
+  tokens: HighlightToken[];
+}
+
+interface HighlightToken {
+  content: string;
+  classes: string[];
 }
 
 const blocks = computed(() => parseUsageExample(props.source, props.defaultLanguage));
@@ -46,17 +65,26 @@ function parseUsageExample(source: string, defaultLanguage: string): MarkdownBlo
   while ((match = fencePattern.exec(source)) !== null) {
     foundFence = true;
     pushTextBlock(parsed, source.slice(cursor, match.index));
+    const language = match[1] || defaultLanguage;
+    const content = match[2].replace(/\s+$/, "");
     parsed.push({
       type: "code",
-      language: match[1] || defaultLanguage,
-      content: match[2].replace(/\s+$/, ""),
+      language,
+      content,
+      tokens: highlightCode(content, language),
     });
     cursor = fencePattern.lastIndex;
   }
 
   if (!foundFence) {
-    return source.trim()
-      ? [{ type: "code", language: defaultLanguage, content: source.trim() }]
+    const content = source.trim();
+    return content
+      ? [{
+          type: "code",
+          language: defaultLanguage,
+          content,
+          tokens: highlightCode(content, defaultLanguage),
+        }]
       : [];
   }
 
@@ -68,7 +96,46 @@ function parseUsageExample(source: string, defaultLanguage: string): MarkdownBlo
 function pushTextBlock(blocks: MarkdownBlock[], value: string) {
   const content = value.trim();
   if (!content) return;
-  blocks.push({ type: "text", language: "text", content });
+  blocks.push({ type: "text", language: "text", content, tokens: [] });
+}
+
+function highlightCode(source: string, language: string): HighlightToken[] {
+  const grammarName = normalizeLanguage(language);
+  const grammar = Prism.languages[grammarName];
+  if (!grammar) {
+    return [{ content: source, classes: [] }];
+  }
+
+  return flattenTokenStream(Prism.tokenize(source, grammar));
+}
+
+function normalizeLanguage(language: string) {
+  const normalized = language.toLowerCase();
+  if (normalized === "xml" || normalized === "html") return "markup";
+  if (normalized === "yml") return "yaml";
+  return normalized;
+}
+
+function flattenTokenStream(
+  stream: Prism.TokenStream,
+  inheritedClasses: string[] = [],
+): HighlightToken[] {
+  const entries = Array.isArray(stream) ? stream : [stream];
+
+  return entries.flatMap((entry) => {
+    if (typeof entry === "string") {
+      return [{ content: entry, classes: inheritedClasses }];
+    }
+
+    const aliases = Array.isArray(entry.alias) ? entry.alias : [entry.alias];
+    const classes = Array.from(new Set([
+      ...inheritedClasses,
+      "token",
+      entry.type,
+      ...aliases.filter(Boolean),
+    ]));
+    return flattenTokenStream(entry.content, classes);
+  });
 }
 </script>
 
@@ -82,7 +149,8 @@ function pushTextBlock(blocks: MarkdownBlock[], value: string) {
 }
 
 pre {
-  @apply mb-3 overflow-x-auto rounded-sm bg-gray-900 p-3 text-xs leading-5 text-green-300;
+  @apply mb-3 overflow-x-auto rounded-sm p-3 text-xs leading-5;
+  background: #1f2937;
 }
 
 code {

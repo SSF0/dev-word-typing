@@ -12,6 +12,7 @@
         <MainTool>
           <template #actions>
             <button
+              v-if="!detailOpen"
               class="btn btn-outline btn-xs whitespace-nowrap"
               type="button"
               aria-controls="practice-detail-panel"
@@ -19,7 +20,7 @@
               data-test="detail-toggle"
               @click="toggleDetail"
             >
-              {{ detailOpen ? "收起详情" : "查看详情" }}
+              查看详情
             </button>
           </template>
         </MainTool>
@@ -27,17 +28,18 @@
         <MainGame />
       </section>
 
-      <aside
-        id="practice-detail-panel"
-        class="detail-panel"
-        aria-label="知识点详情"
-        :aria-hidden="!detailOpen"
-        :inert="!detailOpen"
-        data-test="detail-panel"
-      >
-        <MainAnnotationPanel @close="closeDetail" />
-      </aside>
     </div>
+
+    <aside
+      id="practice-detail-panel"
+      class="detail-panel xl:border-l xl:border-gray-200 xl:dark:border-gray-700"
+      aria-label="知识点详情"
+      :aria-hidden="!detailOpen"
+      :inert="!detailOpen"
+      data-test="detail-panel"
+    >
+      <MainAnnotationPanel @close="closeDetail" />
+    </aside>
 
     <Transition name="detail-backdrop">
       <button
@@ -89,7 +91,7 @@ onBeforeUnmount(() => {
 .practice-workspace {
   --practice-width: 56rem;
   --word-rail-width: 12rem;
-  --detail-width: 32rem;
+  --detail-width: 40rem;
   --workspace-gap: 1rem;
   --closed-workspace-width: 69rem;
   --open-workspace-width: 102rem;
@@ -131,9 +133,9 @@ onBeforeUnmount(() => {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateX(calc(100% + 1rem));
+  clip-path: inset(0 0 0 100%);
   transition:
-    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    clip-path 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.2s ease,
     visibility 0s linear 0.35s;
 }
@@ -143,10 +145,11 @@ onBeforeUnmount(() => {
 }
 
 .is-detail-open .detail-panel {
+  animation: detail-panel-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateX(0);
+  clip-path: inset(0);
   transition-delay: 0s;
 }
 
@@ -173,22 +176,6 @@ onBeforeUnmount(() => {
 }
 
 @media (min-width: 1280px) {
-  .practice-track {
-    grid-template-columns: var(--word-rail-width) var(--practice-width);
-    gap: var(--workspace-gap);
-    width: var(--closed-workspace-width);
-  }
-
-  .practice-pane {
-    width: var(--practice-width);
-  }
-
-  .practice-word-column {
-    width: var(--word-rail-width);
-  }
-}
-
-@media (min-width: 1700px) {
   .practice-workspace {
     overflow-x: visible;
   }
@@ -196,35 +183,76 @@ onBeforeUnmount(() => {
   .practice-track {
     position: relative;
     left: 50%;
+    grid-template-columns: var(--word-rail-width) var(--workspace-gap) minmax(0, 1fr) 0 minmax(0, 0fr);
+    gap: 0;
+    width: var(--closed-workspace-width);
     margin-inline: 0;
     transform: translateX(-50%);
-    transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      grid-template-columns 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .detail-panel {
-    transform: none;
+  .practice-pane {
+    grid-column: 3;
+    width: var(--practice-width);
+  }
+
+  .practice-word-column {
+    grid-column: 1;
+    width: var(--word-rail-width);
   }
 
   .is-detail-open .practice-track {
-    grid-template-columns: var(--word-rail-width) var(--practice-width) var(--detail-width);
-    width: var(--open-workspace-width);
+    grid-template-columns: var(--word-rail-width) var(--workspace-gap) minmax(0, 1fr) var(--workspace-gap) minmax(0, 1fr);
+    width: calc(100% - 2rem);
+  }
+
+  .is-detail-open .practice-pane {
+    width: 100%;
+  }
+
+  .is-detail-open .practice-word-column {
+    width: var(--word-rail-width);
   }
 
   .is-detail-open .detail-panel {
-    position: relative;
-    z-index: auto;
-    top: auto;
-    right: auto;
+    position: absolute;
+    top: 0;
+    right: 1rem;
     bottom: auto;
-    grid-column: 3;
-    width: var(--detail-width);
+    width: calc(50% - 8rem);
     height: calc(100dvh - 8rem);
     max-height: calc(100dvh - 8rem);
     padding: 0;
+    clip-path: none;
   }
 
   .detail-backdrop {
     display: none;
+  }
+}
+
+@media (min-width: 1664px) {
+  .is-detail-open .practice-track {
+    width: var(--open-workspace-width);
+  }
+
+  .is-detail-open .detail-panel {
+    right: calc((100% - var(--open-workspace-width)) / 2);
+    width: 44rem;
+  }
+}
+
+@keyframes detail-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -234,6 +262,10 @@ onBeforeUnmount(() => {
   .detail-backdrop-enter-active,
   .detail-backdrop-leave-active {
     transition-duration: 0.01ms;
+  }
+
+  .is-detail-open .detail-panel {
+    animation-duration: 0.01ms;
   }
 }
 </style>
