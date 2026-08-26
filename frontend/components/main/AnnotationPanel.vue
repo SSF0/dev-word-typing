@@ -58,7 +58,7 @@
           <span class="summary-hint">需要时展开</span>
         </summary>
         <div class="details-content source-details">
-          <pre><code>{{ currentItem.usageExample }}</code></pre>
+          <UsageExampleMarkdown :source="currentItem.usageExample" />
         </div>
       </details>
 
@@ -110,6 +110,7 @@ import { toast } from "vue-sonner";
 
 import { updateStatementNote } from "~/api/course";
 import { useCourseStore } from "~/store/course";
+import UsageExampleMarkdown from "./UsageExampleMarkdown.vue";
 
 const emit = defineEmits<{
   close: [];

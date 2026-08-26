@@ -51,12 +51,26 @@ public class TechStackService {
     /** GET /course-pack/{stackId}/courses/{nodeId} */
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public NodeDto node(Long stackId, Long nodeId) {
-        Node node = nodeRepo.findById(nodeId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "course not found"));
+        Node node = resolveNode(stackId, nodeId);
         if (!node.getStackId().equals(stackId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "course not in pack");
         }
         return Assemblers.toNode(node);
+    }
+
+    private Node resolveNode(Long stackId, Long nodeId) {
+        var exactNode = nodeRepo.findById(nodeId);
+        if (exactNode.isPresent()) {
+            return exactNode.get();
+        }
+
+        // 兼容旧书签 /game/{stackId}/1..3：迁移为三个小节后数据库主键已变化。
+        var orderedSections = nodeRepo.findByStackIdOrderBySortOrderAsc(stackId);
+        if (nodeId > 0 && nodeId <= orderedSections.size()) {
+            return orderedSections.get(nodeId.intValue() - 1);
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "course not found");
     }
 
     /** POST /course-pack/{stackId}/courses/{nodeId}/complete —— 返回下一知识点节点，已完成则返回卡片体 */

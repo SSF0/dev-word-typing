@@ -9,10 +9,15 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DataSeederTest {
+
+    private static final Pattern CHINESE_COMMENT = Pattern.compile(
+            ".*(//|#|<!--).*\\p{IsHan}.*"
+    );
 
     @Test
     void migratesLegacyAnnotationNodesIntoThreeOrderedLearningSections() {
@@ -40,6 +45,11 @@ class DataSeederTest {
                 .allSatisfy(statement -> assertThat(statement.getPrefix()).isEqualTo("@"));
         assertThat(statement(annotationSection, "RestController").getUsageExample())
                 .contains("@RequestMapping", "@GetMapping", "findById");
+        var requestBody = statement(annotationSection, "RequestBody");
+        assertThat(requestBody.getExplanation())
+                .contains("通常接收 DTO 而不是 Entity；与 @Valid 配合执行参数校验。");
+        assertThat(requestBody.getUsageExample())
+                .contains("@Valid @RequestBody", "DTO", "参数校验");
 
         var mybatisSection = section(stack, "MyBatis");
         assertThat(mybatisSection.getStatements())
@@ -64,10 +74,24 @@ class DataSeederTest {
                 .allSatisfy(statement -> {
                     assertThat(statement.getExplanation()).isNotBlank();
                     assertThat(statement.getUsageExample()).isNotBlank();
+                    assertCommentedMarkdownExample(statement);
                 });
         assertThat(statement(annotationSection, "Controller").getNote())
                 .isEqualTo("记住我自己的 Controller 笔记");
         assertThat(savedStacks.get()).containsExactly(stack);
+    }
+
+    private void assertCommentedMarkdownExample(Statement statement) {
+        var lines = statement.getUsageExample().lines().toList();
+        assertThat(lines)
+                .as("%s 的使用示例应使用 Markdown 代码块", statement.getEnglish())
+                .hasSizeGreaterThanOrEqualTo(3);
+        assertThat(lines.get(0)).startsWith("```");
+        assertThat(lines.get(lines.size() - 1)).isEqualTo("```");
+        assertThat(lines.subList(1, lines.size() - 1))
+                .filteredOn(line -> !line.isBlank())
+                .as("%s 的每行示例代码都应有中文注释", statement.getEnglish())
+                .allMatch(line -> CHINESE_COMMENT.matcher(line).matches());
     }
 
     @Test

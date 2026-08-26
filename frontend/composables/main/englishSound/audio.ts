@@ -79,3 +79,64 @@ export function play(playOptions?: PlayOptions) {
     timeoutId && clearTimeout(timeoutId);
   };
 }
+
+const TechnicalWordInterval = 180;
+
+/**
+ * 依次播放由同一个技术术语拆出的多个单词。
+ * `interval` 仍用于整组重读，组内只保留较短停顿，避免听起来像互不相关的单词。
+ */
+export function playSequence(sources: string[], playOptions?: PlayOptions) {
+  const playableSources = sources.filter(Boolean);
+  if (playableSources.length === 0) return () => {};
+  if (playableSources.length === 1) {
+    updateSource(playableSources[0]);
+    return play(playOptions);
+  }
+
+  const { times, rate, interval } = Object.assign({}, DefaultPlayOptions, playOptions);
+  let sourceIndex = 0;
+  let sequenceIndex = 1;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const startCurrentSource = () => {
+    updateSource(playableSources[sourceIndex]);
+    audio.playbackRate = rate;
+    audio.play();
+  };
+
+  const cleanup = () => {
+    audio.removeEventListener("ended", handleEnded);
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+
+  const scheduleCurrentSource = (delay: number) => {
+    timeoutId = setTimeout(startCurrentSource, delay);
+  };
+
+  function handleEnded() {
+    if (sourceIndex < playableSources.length - 1) {
+      sourceIndex++;
+      scheduleCurrentSource(TechnicalWordInterval);
+      return;
+    }
+
+    if (sequenceIndex < times) {
+      sequenceIndex++;
+      sourceIndex = 0;
+      scheduleCurrentSource(interval);
+      return;
+    }
+
+    cleanup();
+  }
+
+  audio.addEventListener("ended", handleEnded, false);
+  startCurrentSource();
+
+  return () => {
+    cleanup();
+    audio.pause();
+    audio.currentTime = 0;
+  };
+}

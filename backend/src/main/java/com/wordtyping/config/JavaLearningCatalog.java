@@ -268,7 +268,7 @@ final class JavaLearningCatalog {
                 null,
                 chinese,
                 "## 文件职责\n" + chinese + "。\n\n## 创建规范\n" + rule,
-                projectUsageExample(english, relativePath),
+                markdownUsageExample(english, projectUsageExample(english, relativePath)),
                 null
         );
     }
@@ -281,7 +281,7 @@ final class JavaLearningCatalog {
             String rawUsageExample,
             String referenceCode
     ) {
-        var usageExample = stripProjectReference(rawUsageExample);
+        var usageExample = markdownUsageExample(english, rawUsageExample);
         return new LearningItemSeed(
                 english,
                 prefix,
@@ -304,6 +304,227 @@ final class JavaLearningCatalog {
         }
 
         return separator < 0 ? null : rawUsageExample.substring(separator).stripLeading();
+    }
+
+    private static String markdownUsageExample(String term, String rawUsageExample) {
+        var code = stripProjectReference(rawUsageExample);
+        if (code == null || code.isBlank()) {
+            return null;
+        }
+
+        var language = exampleLanguage(term, code);
+        var commentedCode = code.strip().lines()
+                .map(line -> annotateExampleLine(line, term, language))
+                .reduce((left, right) -> left + "\n" + right)
+                .orElse("");
+        return "```" + language + "\n" + commentedCode + "\n```";
+    }
+
+    private static String exampleLanguage(String term, String code) {
+        if ("application.yaml".equals(term)) {
+            return "yaml";
+        }
+        if ("pom.xml".equals(term) || code.stripLeading().startsWith("<")) {
+            return "xml";
+        }
+        if (code.contains("public ") || code.contains("private ") || code.contains("\n@")
+                || code.stripLeading().startsWith("@") || code.contains(";")
+                || code.contains("{") || code.contains("Wrappers.")) {
+            return "java";
+        }
+        return "text";
+    }
+
+    private static String annotateExampleLine(String line, String term, String language) {
+        if (line.isBlank()) {
+            return line;
+        }
+
+        var explanation = explainExampleLine(line.strip(), term, language);
+        return switch (language) {
+            case "xml" -> line + " <!-- " + explanation + " -->";
+            case "yaml", "text" -> line + " # " + explanation;
+            default -> line + " // " + explanation;
+        };
+    }
+
+    private static String explainExampleLine(String line, String term, String language) {
+        if ("xml".equals(language)) {
+            return explainXmlLine(line);
+        }
+        if ("yaml".equals(language)) {
+            return explainYamlLine(line);
+        }
+
+        var pathLine = line.replaceFirst("^[│├└─\\s]+", "");
+        if (pathLine.endsWith("/")) {
+            return "声明 " + pathLine.substring(0, pathLine.length() - 1) + " 目录";
+        }
+        if (pathLine.matches(".*\\.(java|xml|yaml|json)$")) {
+            return "展示该目录中的 " + pathLine + " 文件";
+        }
+        if (line.contains("@Valid @RequestBody")) {
+            return "使用 @Valid 执行参数校验，并由 @RequestBody 把 JSON 请求体绑定为 DTO";
+        }
+        if (line.startsWith("@") || line.contains(" @")) {
+            return explainAnnotationLine(line);
+        }
+        if (line.startsWith("public class ") || line.startsWith("class ")) {
+            return "定义示例类，展示 " + term + " 在项目中的位置和职责";
+        }
+        if (line.startsWith("public interface ")) {
+            return "定义接口，由框架代理或实现类提供具体行为";
+        }
+        if (line.startsWith("public record ")) {
+            return "定义只承载数据的不可变记录类型";
+        }
+        if (line.startsWith("private final ")) {
+            return "声明不可变依赖，准备通过构造器注入";
+        }
+        if (line.startsWith("private ")) {
+            return "声明对象内部使用的字段";
+        }
+        if (line.startsWith("public static void main")) {
+            return "声明 Java 应用的启动入口方法";
+        }
+        if (line.startsWith("public ") || line.startsWith("protected ") || line.startsWith("int ")
+                || line.startsWith("User ") || line.startsWith("Wrappers.")) {
+            return "声明这一层对外提供的方法或调用表达式";
+        }
+        if (line.startsWith("this.")) {
+            return "把构造器参数保存到当前对象的字段中";
+        }
+        if (line.startsWith("return Result.success")) {
+            return "调用业务逻辑并包装为统一的成功响应";
+        }
+        if (line.startsWith("return Result.failure")) {
+            return "把异常信息转换为统一的失败响应";
+        }
+        if (line.startsWith("return Optional.ofNullable")) {
+            return "把可能为空的查询结果包装成 Optional";
+        }
+        if (line.startsWith("return request.getHeader")) {
+            return "根据请求头是否存在决定是否继续处理请求";
+        }
+        if (line.startsWith("return point.proceed")) {
+            return "继续执行被切面拦截的原始方法";
+        }
+        if (line.startsWith("return ")) {
+            return "返回当前方法的处理结果";
+        }
+        if (line.contains("SpringApplication.run")) {
+            return "启动 Spring 容器和内嵌 Web 服务器";
+        }
+        if (line.contains("new SqlSessionFactoryBean")) {
+            return "创建用于构建 SqlSessionFactory 的工厂 Bean";
+        }
+        if (line.contains("setDataSource")) {
+            return "把数据源交给 MyBatis 会话工厂";
+        }
+        if (line.contains("addInterceptor")) {
+            return "把自定义拦截器注册到 Spring MVC";
+        }
+        if (line.contains("chain.doFilter")) {
+            return "把请求和响应继续交给过滤器链";
+        }
+        if (line.contains("sendWelcomeMail")) {
+            return "收到注册事件后触发欢迎邮件动作";
+        }
+        if (line.contains("closeTimeoutOrders")) {
+            return "把超时订单处理委托给业务服务";
+        }
+        if (line.startsWith(".") || line.startsWith("basePackages")
+                || line.startsWith("sqlSessionFactoryRef")) {
+            return "继续补充上一行调用或注解的配置参数";
+        }
+        if (line.equals("{") || line.endsWith(" {") || line.endsWith("(")) {
+            return "开始当前声明的代码块或参数列表";
+        }
+        if (line.equals(") {")) {
+            return "结束参数列表并开始方法代码块";
+        }
+        if (line.equals("}")) {
+            return "结束当前代码块";
+        }
+        if (line.equals(")") || line.equals(") { }")) {
+            return "结束上一行开始的参数或类型声明";
+        }
+        return "展示 " + term + " 示例中的这一行配置或实现";
+    }
+
+    private static String explainAnnotationLine(String line) {
+        if (line.contains("@RestController")) return "声明该类是直接返回 JSON 的 REST 控制器";
+        if (line.contains("@Controller")) return "声明该类是 Spring MVC 控制器";
+        if (line.contains("@RequestMapping")) return "统一声明当前控制器的请求路径前缀";
+        if (line.contains("@GetMapping")) return "把 HTTP GET 请求映射到下方方法";
+        if (line.contains("@PostMapping")) return "把 HTTP POST 请求映射到下方方法";
+        if (line.contains("@PathVariable")) return "从 URL 路径中读取动态参数";
+        if (line.contains("@RequestBody")) return "把 JSON 请求体反序列化为 DTO 参数";
+        if (line.contains("@Valid")) return "触发 DTO 字段和嵌套对象的参数校验";
+        if (line.contains("@Service")) return "把业务实现注册为 Spring Service Bean";
+        if (line.contains("@Repository")) return "把持久化组件注册为 Spring Bean";
+        if (line.contains("@Component")) return "把通用组件交给 Spring 容器管理";
+        if (line.contains("@ConfigurationProperties")) return "把指定前缀的配置绑定到类型安全对象";
+        if (line.contains("@Configuration")) return "声明集中装配 Bean 的配置类";
+        if (line.contains("@Bean")) return "把方法返回对象注册到 Spring 容器";
+        if (line.contains("@Autowired")) return "让 Spring 注入构造器所需依赖";
+        if (line.contains("@ExceptionHandler")) return "把指定异常交给当前方法统一处理";
+        if (line.contains("@SpringBootApplication")) return "启用自动配置、组件扫描和启动能力";
+        if (line.contains("@Scheduled")) return "按照 cron 规则周期执行下方方法";
+        if (line.contains("@MapperScan")) return "批量扫描并注册指定包中的 Mapper 接口";
+        if (line.contains("@Mapper")) return "让 MyBatis 为该接口创建代理实现";
+        if (line.contains("@Select")) return "把 SELECT SQL 绑定到 Mapper 方法";
+        if (line.contains("@Insert")) return "把 INSERT SQL 绑定到 Mapper 方法";
+        if (line.contains("@Update")) return "把 UPDATE SQL 绑定到 Mapper 方法";
+        if (line.contains("@Delete")) return "把 DELETE SQL 绑定到 Mapper 方法";
+        if (line.contains("@Param")) return "为 SQL 占位符提供稳定的参数名称";
+        if (line.contains("@NotBlank")) return "要求 DTO 中的文本字段不能为空";
+        if (line.contains("@Email")) return "要求 DTO 中的字段符合邮箱格式";
+        if (line.contains("@SpringBootTest")) return "加载完整 Spring Boot 上下文进行测试";
+        if (line.contains("@Test")) return "声明一个可由测试框架执行的测试方法";
+        if (line.contains("@Target")) return "限制自定义注解允许标记的 Java 元素";
+        if (line.contains("@Retention")) return "声明自定义注解在运行期仍然可见";
+        if (line.contains("@Aspect")) return "声明处理横切逻辑的切面类";
+        if (line.contains("@Around")) return "环绕执行匹配到的目标方法";
+        if (line.contains("@EventListener")) return "订阅并处理指定类型的应用事件";
+        return "应用这一行注解，为下方声明补充框架语义";
+    }
+
+    private static String explainXmlLine(String line) {
+        if (line.startsWith("<project")) return "声明 Maven 项目描述文档的根节点";
+        if (line.startsWith("</project")) return "结束 Maven 项目描述文档";
+        if (line.contains("<modelVersion>")) return "声明当前 POM 使用的模型版本";
+        if (line.contains("<groupId>")) return "声明项目所属组织标识";
+        if (line.contains("<artifactId>")) return "声明项目或依赖的模块名称";
+        if (line.startsWith("<properties")) return "开始声明项目统一使用的构建属性";
+        if (line.startsWith("</properties")) return "结束构建属性配置";
+        if (line.contains("<java.version>")) return "固定项目编译和运行使用的 Java 版本";
+        if (line.startsWith("<dependencies")) return "开始声明项目依赖列表";
+        if (line.startsWith("</dependencies")) return "结束项目依赖列表";
+        if (line.startsWith("<dependency")) return "开始声明一个 Maven 依赖";
+        if (line.startsWith("</dependency")) return "结束当前 Maven 依赖声明";
+        if (line.startsWith("<resultMap")) return "声明数据库列到 Java 对象字段的映射规则";
+        if (line.startsWith("</resultMap")) return "结束当前结果映射定义";
+        if (line.startsWith("<id ")) return "把主键列映射到对象的主键属性";
+        if (line.startsWith("<select")) return "声明一个 Mapper 查询语句及其参数、返回映射";
+        if (line.startsWith("</select")) return "结束当前 Mapper 查询语句";
+        if (line.toUpperCase().startsWith("SELECT ")) return "执行查询并用占位符安全绑定参数";
+        return "补充当前 XML 配置节点的内容";
+    }
+
+    private static String explainYamlLine(String line) {
+        var key = line.strip().split(":", 2)[0];
+        return switch (key) {
+            case "spring" -> "Spring Boot 配置的根节点";
+            case "application" -> "应用基本信息配置分组";
+            case "name" -> "设置当前应用名称";
+            case "datasource" -> "数据库连接配置分组";
+            case "url" -> "设置数据库 JDBC 连接地址";
+            case "username" -> "设置数据库登录用户名";
+            case "server" -> "内嵌 Web 服务器配置分组";
+            case "port" -> "设置应用监听端口";
+            default -> "声明当前 YAML 配置项";
+        };
     }
 
     private static String withoutAt(String english) {

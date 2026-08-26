@@ -8,12 +8,33 @@ import com.wordtyping.repository.TechStackRepository;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TechStackServiceTest {
+
+    @Test
+    void resolvesADeletedLegacyCourseIdByItsOneBasedSectionOrder() {
+        var annotationSection = new Node();
+        annotationSection.setId(4L);
+        annotationSection.setStackId(1L);
+        annotationSection.setSortOrder(0);
+        annotationSection.setTitle("Java 常用注解");
+
+        var service = new TechStackService(
+                unusedRepository(TechStackRepository.class),
+                legacyAliasNodeRepository(annotationSection),
+                unusedRepository(StatementRepository.class)
+        );
+
+        var resolved = service.node(1L, 1L);
+
+        assertThat(resolved.id()).isEqualTo(4L);
+        assertThat(resolved.title()).isEqualTo("Java 常用注解");
+    }
 
     @Test
     void mapsLearningDetailsFromAStatement() {
@@ -81,6 +102,19 @@ class TechStackServiceTest {
                         savedStatement.set(saved);
                         yield saved;
                     }
+                    default -> throw new UnsupportedOperationException(method.getName());
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private NodeRepository legacyAliasNodeRepository(Node firstSection) {
+        return (NodeRepository) Proxy.newProxyInstance(
+                NodeRepository.class.getClassLoader(),
+                new Class<?>[]{NodeRepository.class},
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "findById" -> Optional.empty();
+                    case "findByStackIdOrderBySortOrderAsc" -> List.of(firstSection);
                     default -> throw new UnsupportedOperationException(method.getName());
                 }
         );

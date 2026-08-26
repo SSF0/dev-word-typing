@@ -19,7 +19,8 @@ const mocks = vi.hoisted(() => {
         chinese: "REST 控制器；接收请求并返回 JSON",
         explanation:
           "## 核心作用\n@RestController 让方法返回值直接写入响应体。\n\n## 使用要点\nController 只调用 Service 并组织响应。",
-        usageExample: "@RestController\npublic class UserController { }",
+        usageExample:
+          "```java\n@RestController // 声明 REST 控制器\npublic class UserController { } // 定义用户控制器\n```",
         referenceCode: "@Controller\n@ResponseBody",
         note: "当前注解笔记",
       },
@@ -75,6 +76,17 @@ describe("AnnotationPanel", () => {
     expect(usage.text()).not.toContain("使用实例");
     expect(usage.text()).toContain("public class UserController");
     expect(wrapper.find('[data-test="project-path"]').exists()).toBe(false);
+  });
+
+  it("renders a fenced Markdown example as commented source code", async () => {
+    const wrapper = mount(AnnotationPanel);
+    const usage = wrapper.get('[data-test="usage-example"]');
+
+    expect(usage.text()).not.toContain("```java");
+    const code = usage.get('code[data-language="java"]');
+    expect(code.classes()).toContain("language-java");
+    expect(code.text()).toContain("@RestController // 声明 REST 控制器");
+    expect(code.text()).toContain("public class UserController { } // 定义用户控制器");
   });
 
   it("lets the note editor and save action fill the remaining detail space", () => {
