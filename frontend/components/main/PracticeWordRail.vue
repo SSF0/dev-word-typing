@@ -4,8 +4,8 @@
     aria-label="本节练习内容"
     data-test="practice-word-rail"
   >
-    <div class="word-rail-heading">
-      <h5>本节内容</h5>
+    <div class="word-rail-heading pt-4">
+      <h5 class="text-base">本节内容</h5>
       <p>点击查看 · 再点练习</p>
     </div>
 
@@ -148,7 +148,7 @@ watch(
 }
 
 .word-rail-heading h5 {
-  @apply text-xs font-semibold text-gray-600 dark:text-gray-300;
+  @apply font-semibold text-gray-600 dark:text-gray-300;
 }
 
 .word-rail-heading p {

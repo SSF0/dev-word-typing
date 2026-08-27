@@ -9,7 +9,7 @@
   <MainLearningTimer v-if="isAuthenticated()"></MainLearningTimer>
   <MainTips />
   <MainSummary />
-  <GamePauseModal v-if="isAuthenticated()"></GamePauseModal>
+  <GamePauseModal />
   <MainGameSettingModal />
 </template>
 

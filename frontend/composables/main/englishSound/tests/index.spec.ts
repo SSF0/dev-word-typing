@@ -2,6 +2,7 @@ import { createTestingPinia } from "@pinia/testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useCourseStore } from "~/store/course";
+import { useToolbar } from "../../dictation";
 import { play, playSequence, updateSource } from "../audio";
 import {
   playEnglish,
@@ -46,6 +47,7 @@ describe("useCurrentStatementEnglishSound", () => {
     };
 
     vi.clearAllMocks();
+    useToolbar().resetToolBarData();
   });
 
   it("plays sound", async () => {
@@ -54,6 +56,22 @@ describe("useCurrentStatementEnglishSound", () => {
     playSound();
 
     expect(play).toHaveBeenCalled();
+  });
+
+  it("applies playback settings in Chinese-to-English word practice", () => {
+    const { toolBarData } = useToolbar();
+    toolBarData.times = 2;
+    toolBarData.rate = 1.5;
+    toolBarData.interval = 3000;
+    const { playSound } = useCurrentStatementEnglishSound();
+
+    playSound();
+
+    expect(play).toHaveBeenCalledWith({
+      times: 2,
+      rate: 1.5,
+      interval: 3000,
+    });
   });
 
   it("should updates audio source", async () => {
@@ -108,7 +126,11 @@ describe("useCurrentStatementEnglishSound", () => {
     expect(playSequence).toHaveBeenCalledWith([
       "https://dict.youdao.com/dictvoice?type=2&audio=Rest",
       "https://dict.youdao.com/dictvoice?type=2&audio=Controller",
-    ], undefined);
+    ], {
+      times: 1,
+      rate: 1,
+      interval: 1000,
+    });
     expect(play).not.toHaveBeenCalled();
   });
 

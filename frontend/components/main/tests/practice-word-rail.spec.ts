@@ -89,6 +89,16 @@ describe("PracticeWordRail", () => {
     expect(keywords[0].get('[data-test="keyword-content"]').classes()).toContain("is-blurred");
   });
 
+  it("matches the practice heading top spacing and font size", () => {
+    const wrapper = mount(PracticeWordRail);
+    const heading = wrapper.get(".word-rail-heading");
+    const title = heading.get("h5");
+
+    expect(heading.classes()).toContain("pt-4");
+    expect(title.classes()).toContain("text-base");
+    expect(title.classes()).not.toContain("text-xs");
+  });
+
   it("uses an inward right divider and keeps padding inside every word", () => {
     const wrapper = mount(PracticeWordRail);
     const rail = wrapper.get('[data-test="practice-word-rail"]');

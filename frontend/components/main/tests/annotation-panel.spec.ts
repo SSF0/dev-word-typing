@@ -61,6 +61,23 @@ describe("AnnotationPanel", () => {
     expect(wrapper.find('[data-test="learning-keywords"]').exists()).toBe(false);
   });
 
+  it("matches the practice heading top spacing and font size", () => {
+    const wrapper = mount(AnnotationPanel);
+    const header = wrapper.get(".annotation-header");
+    const courseTitle = wrapper.get('[data-test="detail-course-title"]');
+
+    expect(header.classes()).toContain("pt-4");
+    expect(courseTitle.classes()).toContain("text-base");
+    expect(courseTitle.classes()).not.toContain("text-[10px]");
+  });
+
+  it("leaves detail collapsing to the persistent workspace toolbar", () => {
+    const wrapper = mount(AnnotationPanel);
+
+    expect(wrapper.find('button[aria-label="收起知识点详情"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("收起详情");
+  });
+
   it("opens usage and source details by default", () => {
     const wrapper = mount(AnnotationPanel);
     const usage = wrapper.get('[data-test="usage-example"]');

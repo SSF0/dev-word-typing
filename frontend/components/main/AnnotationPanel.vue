@@ -1,8 +1,11 @@
 <template>
   <div class="annotation-panel">
-    <header class="annotation-header">
+    <header class="annotation-header pt-4">
       <div class="min-w-0">
-        <div class="mb-0.5 text-[10px] text-gray-400">
+        <div
+          class="mb-0.5 text-base text-gray-400"
+          data-test="detail-course-title"
+        >
           {{ courseStore.currentCourse?.title }}
         </div>
         <div class="flex items-center gap-2">
@@ -20,14 +23,6 @@
           </span>
         </div>
       </div>
-      <button
-        class="btn btn-ghost btn-xs"
-        type="button"
-        aria-label="收起知识点详情"
-        @click="emit('close')"
-      >
-        收起详情
-      </button>
     </header>
 
     <div class="annotation-body">
@@ -172,10 +167,6 @@ import { updateStatementNote } from "~/api/course";
 import { useCourseStore } from "~/store/course";
 import NoteMarkdown from "./NoteMarkdown.vue";
 import UsageExampleMarkdown from "./UsageExampleMarkdown.vue";
-
-const emit = defineEmits<{
-  close: [];
-}>();
 
 const courseStore = useCourseStore();
 const noteDraft = ref("");

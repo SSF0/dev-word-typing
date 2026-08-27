@@ -9,25 +9,9 @@
       <MainPracticeWordRail class="practice-word-column" />
 
       <section class="practice-pane flex h-full min-h-0 flex-col">
-        <MainTool>
-          <template #actions>
-            <button
-              v-if="!detailOpen"
-              class="btn btn-outline btn-xs whitespace-nowrap"
-              type="button"
-              aria-controls="practice-detail-panel"
-              :aria-expanded="detailOpen"
-              data-test="detail-toggle"
-              @click="toggleDetail"
-            >
-              查看详情
-            </button>
-          </template>
-        </MainTool>
-
+        <MainTool />
         <MainGame />
       </section>
-
     </div>
 
     <aside
@@ -38,7 +22,7 @@
       :inert="!detailOpen"
       data-test="detail-panel"
     >
-      <MainAnnotationPanel @close="closeDetail" />
+      <MainAnnotationPanel />
     </aside>
 
     <Transition name="detail-backdrop">
@@ -55,22 +39,15 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 
 import MainAnnotationPanel from "~/components/main/AnnotationPanel.vue";
 import MainGame from "~/components/main/Game.vue";
 import MainPracticeWordRail from "~/components/main/PracticeWordRail.vue";
 import MainTool from "~/components/main/Tool.vue";
+import { usePracticeDetail } from "~/composables/main/usePracticeDetail";
 
-const detailOpen = ref(false);
-
-function toggleDetail() {
-  detailOpen.value = !detailOpen.value;
-}
-
-function closeDetail() {
-  detailOpen.value = false;
-}
+const { detailOpen, closeDetail } = usePracticeDetail();
 
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === "Escape" && detailOpen.value) {
@@ -107,6 +84,7 @@ onBeforeUnmount(() => {
   align-items: stretch;
   gap: 0.75rem;
   width: 100%;
+  height: 100%;
   margin-inline: auto;
 }
 
@@ -117,14 +95,14 @@ onBeforeUnmount(() => {
 .practice-word-column {
   align-self: start;
   min-width: 0;
-  height: calc(100dvh - 8rem);
-  max-height: calc(100dvh - 8rem);
+  height: 100%;
+  max-height: 100%;
 }
 
 .detail-panel {
   position: fixed;
   z-index: 40;
-  top: 4rem;
+  top: 3rem;
   right: 0;
   bottom: 0;
   width: min(var(--detail-width), calc(100vw - 1rem));
@@ -156,7 +134,7 @@ onBeforeUnmount(() => {
 .detail-backdrop {
   position: fixed;
   z-index: 30;
-  top: 4rem;
+  top: 3rem;
   right: 0;
   bottom: 0;
   left: 0;
@@ -222,8 +200,8 @@ onBeforeUnmount(() => {
     right: 1rem;
     bottom: auto;
     width: calc(50% - 8rem);
-    height: calc(100dvh - 8rem);
-    max-height: calc(100dvh - 8rem);
+    height: 100%;
+    max-height: 100%;
     padding: 0;
     clip-path: none;
   }
