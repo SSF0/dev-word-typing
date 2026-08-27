@@ -1,14 +1,10 @@
 import type { $Fetch } from "ofetch";
 
-import { useRuntimeConfig } from "#app";
 import { ofetch } from "ofetch";
 
 let http: $Fetch;
-export function setupHttp() {
+export function setupHttp(baseURL: string) {
   if (http) return http;
-
-  const config = useRuntimeConfig();
-  const baseURL = (config.public.apiBase as string) || "";
 
   http = ofetch.create({
     baseURL,

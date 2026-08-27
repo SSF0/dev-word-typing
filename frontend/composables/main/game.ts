@@ -1,5 +1,6 @@
-import { useDevice, useIsLandscape } from "#imports";
 import { ref, watchEffect } from "vue";
+
+import { useDevice, useIsLandscape } from "~/utils/detectDevice";
 
 export enum GameMode {
   Question = "question",

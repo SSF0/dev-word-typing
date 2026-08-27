@@ -8,6 +8,7 @@
 |---|---|
 | [`project-overview.md`](./project-overview.md) | 项目核心思想、技术栈、数据模型、API、当前进度、注意事项（**接手的 AI / 开发者必读**）|
 | [`roadmap.md`](./roadmap.md) | 需求大纲 / 路线图 / 设计原则 |
+| [`superpowers/plans/2026-08-27-migrate-nuxt-to-vue-vite.md`](./superpowers/plans/2026-08-27-migrate-nuxt-to-vue-vite.md) | Nuxt 3 → Vue 3 + TypeScript + Vite 的分阶段迁移实施计划 |
 
 ## 后续可在此沉淀的规范（计划）
 

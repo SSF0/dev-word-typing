@@ -12,11 +12,11 @@
         @click="handlePlayWordSound(word)"
         >{{ word }}</span
       >
-      <UIcon
-        name="i-ph-speaker-simple-high"
+      <AppIcon
+        name="speaker"
         class="ml-1 inline-block h-7 w-7 cursor-pointer text-gray-500 hover:text-fuchsia-500"
         @click="handlePlayEnglishSound"
-      ></UIcon>
+      />
     </div>
     <div class="my-6 text-xl text-gray-500">
       {{ courseStore.currentStatement?.soundmark }}
@@ -49,6 +49,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from "vue";
 
+import MainMasteredBtn from "~/components/main/MasteredBtn.vue";
+import AppIcon from "~/components/ui/AppIcon.vue";
 import { useCurrentStatementEnglishSound } from "~/composables/main/englishSound";
 import { usePlayWordSound } from "~/composables/main/englishSound/audio";
 import { useGameMode } from "~/composables/main/game";

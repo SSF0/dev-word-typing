@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useModal } from "#imports";
+import AppModal from "~/components/ui/AppModal.vue";
 
 defineProps({
   title: {
@@ -28,43 +28,45 @@ defineProps({
   },
 });
 
-const modal = useModal();
+const open = defineModel<boolean>({ default: false });
 const emit = defineEmits(["cancel", "confirm"]);
 
-async function onCancel() {
-  await modal.close();
+function onCancel() {
+  open.value = false;
   emit("cancel");
 }
-async function onConfirm() {
-  await modal.close();
+function onConfirm() {
+  open.value = false;
   emit("confirm");
 }
 </script>
 
 <template>
-  <UModal :ui="{ width: 'w-full sm:max-w-lg' }">
+  <AppModal
+    v-model="open"
+    panel-class="w-full sm:max-w-lg"
+  >
     <div class="flex h-52 flex-col justify-between p-6 text-gray-900 dark:text-white">
       <h2 class="mb-8 text-2xl font-bold">{{ title }}</h2>
       <p class="mb-8 text-base text-gray-700 dark:text-gray-300">
         {{ content }}
       </p>
       <div class="flex w-full justify-end space-x-4">
-        <UButton
+        <button
           v-if="showCancel"
-          color="gray"
-          class="px-6"
+          class="btn px-6"
           @click="onCancel"
         >
           {{ cancelText || "取消" }}
-        </UButton>
-        <UButton
+        </button>
+        <button
           v-if="showConfirm"
-          class="px-6"
+          class="btn btn-primary px-6"
           @click="onConfirm"
         >
           {{ confirmText || "确认" }}
-        </UButton>
+        </button>
       </div>
     </div>
-  </UModal>
+  </AppModal>
 </template>

@@ -3,6 +3,17 @@ import { usePronunciation } from "~/composables/user/pronunciation";
 // 便于测试
 // 后面不使用 audio 后也可以不破坏业务逻辑
 const audio = new Audio();
+
+function startPlayback(media: HTMLMediaElement) {
+  try {
+    void Promise.resolve(media.play()).catch(() => {
+      // 浏览器可能在用户首次交互前拒绝自动播放；这是可恢复状态。
+    });
+  } catch {
+    // 测试替身或旧浏览器也可能同步抛错，发音失败不应打断练习流程。
+  }
+}
+
 export function updateSource(src: string) {
   audio.src = src;
   audio.load();
@@ -29,7 +40,7 @@ export function usePlayWordSound() {
     }
     lastWord = word;
     wordAudio.src = getPronunciationUrl(word);
-    wordAudio.play();
+    startPlayback(wordAudio);
   }
 
   return {
@@ -53,7 +64,7 @@ export function play(playOptions?: PlayOptions) {
   const { times, rate, interval } = Object.assign({}, DefaultPlayOptions, playOptions);
 
   audio.playbackRate = rate;
-  audio.play();
+  startPlayback(audio);
   if (times > 1) {
     audio.addEventListener("ended", handleEnded, false);
   }
@@ -63,7 +74,7 @@ export function play(playOptions?: PlayOptions) {
   function handleEnded() {
     timeoutId = setTimeout(() => {
       if (index < times) {
-        audio.play();
+        startPlayback(audio);
         index++;
       } else {
         index = 1;
@@ -102,7 +113,7 @@ export function playSequence(sources: string[], playOptions?: PlayOptions) {
   const startCurrentSource = () => {
     updateSource(playableSources[sourceIndex]);
     audio.playbackRate = rate;
-    audio.play();
+    startPlayback(audio);
   };
 
   const cleanup = () => {

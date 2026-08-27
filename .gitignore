@@ -2,9 +2,7 @@
 node_modules/
 .pnpm-store/
 
-# ---- Nuxt / Vite 构建产物 ----
-frontend/.nuxt/
-frontend/.output/
+# ---- Vite 构建产物 ----
 frontend/dist/
 
 # ---- Maven / Java ----

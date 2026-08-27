@@ -14,6 +14,7 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { toast } from "vue-sonner";
 
+import Loading from "~/components/Loading.vue";
 import PracticeWorkspace from "~/components/main/PracticeWorkspace.vue";
 import { useGameMode } from "~/composables/main/game";
 import { useNavigation } from "~/composables/useNavigation";

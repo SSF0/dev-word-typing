@@ -2,21 +2,21 @@
   <div
     class="relative flex items-center pb-3 pt-4 text-base"
   >
-    <NuxtLink
+    <RouterLink
       class="clickable-item flex items-center justify-center"
-      :href="`/course-pack/${courseStore.currentCourse?.coursePackId}`"
+      :to="`/course-pack/${courseStore.currentCourse?.coursePackId}`"
     >
-      <UTooltip text="课程列表">
+      <AppTooltip text="课程列表">
         <IconsExpand class="h-7 w-7" />
-      </UTooltip>
-    </NuxtLink>
+      </AppTooltip>
+    </RouterLink>
     <div
       class="clickable-item ml-4"
       @click="openCourseContents"
     >
-      <UTooltip text="课程题目列表">
+      <AppTooltip text="课程题目列表">
         {{ currentCourseInfo }}
-      </UTooltip>
+      </AppTooltip>
     </div>
     <MainStudyVideoLink :video="courseStore.currentCourse?.video" />
 
@@ -32,6 +32,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import CommonProgressBar from "~/components/common/ProgressBar.vue";
+import IconsExpand from "~/components/icons/Expand.vue";
+import MainCourseContents from "~/components/main/CourseContents.vue";
+import MainStudyVideoLink from "~/components/main/StudyVideoLink.vue";
+import AppTooltip from "~/components/ui/AppTooltip.vue";
 import { useCourseContents } from "~/composables/main/useCourseContents";
 import { useCourseStore } from "~/store/course";
 

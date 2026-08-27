@@ -14,7 +14,7 @@
           class="flex h-12 items-center justify-between"
           data-test="game-navbar"
         >
-          <NuxtLink
+          <RouterLink
             to="/course-pack"
             class="btn btn-ghost btn-sm gap-2 px-2"
             aria-label="返回首页"
@@ -35,7 +35,7 @@
               <path d="M9 12h11" />
             </svg>
             <span class="hidden sm:inline">返回首页</span>
-          </NuxtLink>
+          </RouterLink>
 
           <div class="flex items-center gap-1 sm:gap-2">
             <button
@@ -136,7 +136,7 @@
 
       <template v-else>
         <div class="flex h-16 items-center justify-between">
-          <NuxtLink to="/course-pack">
+          <RouterLink to="/course-pack">
             <div class="logo flex items-center">
               <img
                 width="48"
@@ -152,7 +152,7 @@
                 单词打字通
               </h1>
             </div>
-          </NuxtLink>
+          </RouterLink>
 
           <div class="flex items-center gap-2">
             <button
@@ -161,8 +161,8 @@
               data-test="dark-mode"
               @click="toggleDarkMode"
             >
-              <UIcon
-                :name="darkMode === Theme.DARK ? 'i-ph-sun' : 'i-ph-moon'"
+              <AppIcon
+                :name="darkMode === Theme.DARK ? 'sun' : 'moon'"
                 class="h-5 w-5"
               />
             </button>
@@ -171,15 +171,24 @@
       </template>
     </div>
   </header>
+  <CommonDialog
+    v-model="showResetDialog"
+    title="重置进度"
+    content="是否确认重置当前课程进度？"
+    show-cancel
+    show-confirm
+    @cancel="focusQuestionInput"
+    @confirm="confirmDoAgain"
+  />
 </template>
 
 <script setup lang="ts">
-import { useModal } from "#imports";
 import { useWindowScroll } from "@vueuse/core";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 
-import Dialog from "~/components/common/Dialog.vue";
+import CommonDialog from "~/components/common/Dialog.vue";
+import AppIcon from "~/components/ui/AppIcon.vue";
 import { useQuestionInput } from "~/components/main/QuestionInput/questionInputHelper";
 import { courseTimer } from "~/composables/courses/courseTimer";
 import { Theme, useDarkMode } from "~/composables/darkMode";
@@ -194,7 +203,7 @@ const { darkMode, toggleDarkMode } = useDarkMode();
 const route = useRoute();
 const { y } = useWindowScroll();
 const courseStore = useCourseStore();
-const modal = useModal();
+const showResetDialog = ref(false);
 const { focusInput } = useQuestionInput();
 const { showQuestion } = useGameMode();
 const { pauseGame } = useGamePause();
@@ -207,21 +216,18 @@ const isStickyNavBar = computed(() => route.name === "course-pack-id");
 const isScrolled = computed(() => y.value >= SCROLL_THRESHOLD);
 
 function handleDoAgain() {
-  modal.open(Dialog, {
-    title: "重置进度",
-    content: "是否确认重置当前课程进度？",
-    showCancel: true,
-    showConfirm: true,
-    async onCancel() {
-      setTimeout(focusInput, 300);
-    },
-    async onConfirm() {
-      courseStore.doAgain();
-      clearQuestionInput();
-      showQuestion();
-      courseTimer.reset();
-      setTimeout(focusInput, 300);
-    },
-  });
+  showResetDialog.value = true;
+}
+
+function focusQuestionInput() {
+  setTimeout(focusInput, 300);
+}
+
+function confirmDoAgain() {
+  courseStore.doAgain();
+  clearQuestionInput();
+  showQuestion();
+  courseTimer.reset();
+  focusQuestionInput();
 }
 </script>

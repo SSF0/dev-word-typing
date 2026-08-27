@@ -31,6 +31,7 @@
 import { ref } from "vue";
 
 import type { CoursePack } from "~/types";
+import Loading from "~/components/Loading.vue";
 import CoursePackCard from "~/components/courses/CoursePackCard.vue";
 import { useNavigation } from "~/composables/useNavigation";
 import { useCoursePackStore } from "~/store/coursePack";

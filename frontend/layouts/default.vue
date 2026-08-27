@@ -23,7 +23,7 @@
           class="mx-auto flex w-full max-w-screen-xl flex-1"
           :class="{ 'min-h-0': isGameRoute }"
         >
-          <NuxtPage />
+          <RouterView />
         </div>
       </div>
       <Footer v-if="!isGameRoute"></Footer>
@@ -34,6 +34,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+
+import Footer from "~/components/Footer.vue";
+import Navbar from "~/components/Navbar.vue";
 
 const route = useRoute();
 const isGameRoute = computed(() => route.name === "game-coursePackId-id");

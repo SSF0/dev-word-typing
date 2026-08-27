@@ -1,8 +1,8 @@
 <template>
-  <UModal
+  <AppModal
     v-model="showGamePauseModal"
     @close="handleClose"
-    :ui="{ width: 'w-full sm:max-w-lg' }"
+    panel-class="w-full sm:max-w-lg"
   >
     <div class="flex h-52 flex-col justify-between p-6 text-gray-900 dark:text-white">
       <h2 class="mb-8 text-2xl font-bold">游戏暂停</h2>
@@ -10,20 +10,21 @@
         {{ randomMessage }}
       </p>
       <div class="flex w-full justify-end">
-        <UButton
-          class="px-6"
+        <button
+          class="btn btn-primary px-6"
           @click="handleClose"
         >
           继续游戏
-        </UButton>
+        </button>
       </div>
     </div>
-  </UModal>
+  </AppModal>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "vue";
 
+import AppModal from "~/components/ui/AppModal.vue";
 import { useQuestionInput } from "~/components/main/QuestionInput/questionInputHelper";
 import { useGamePause } from "~/composables/main/useGamePause";
 import { useShortcutKeyMode } from "~/composables/user/shortcutKey";

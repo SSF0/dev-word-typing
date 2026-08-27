@@ -1,22 +1,16 @@
 <template>
-  <UModal v-model="contentsVisible">
-    <UContainer
-      :ui="{
-        base: 'w-[90vw] h-[80vh] flex flex-col',
-        constrained: 'max-w-[880px] max-h-[880px]',
-      }"
-    >
+  <AppModal v-model="contentsVisible">
+    <div class="flex h-[80vh] max-h-[880px] w-[90vw] max-w-[880px] flex-col p-5">
       <CommonModalHeader
         title="课程目录"
         @close="hideCourseContents"
       />
       <!-- 添加选项菜单 -->
       <div class="mb-4 flex justify-end">
-        <USelect
+        <AppSelect
           v-model="filterOption"
           :options="options"
-        >
-        </USelect>
+        />
       </div>
       <div class="h-full space-y-3 overflow-y-auto">
         <div
@@ -32,11 +26,11 @@
               <span class="text-lg font-semibold text-purple-600 dark:text-purple-300">
                 {{ index + 1 }}
               </span>
-              <UIcon
+              <AppIcon
                 v-if="item.isMastered"
-                name="i-icon-park-outline:correct"
+                name="check"
                 class="mt-1 h-5 w-5 text-green-700 dark:text-green-500"
-              ></UIcon>
+              />
             </div>
             <div class="flex-grow overflow-hidden">
               <div
@@ -59,24 +53,29 @@
               @click=""
               class="flex w-11 flex-shrink-0 cursor-pointer items-center justify-center transition-transform duration-300 hover:scale-110"
             >
-              <UTooltip text="播放发音">
-                <UIcon
-                  name="i-ph-speaker-simple-high"
+              <AppTooltip text="播放发音">
+                <AppIcon
+                  name="speaker"
                   class="ml-1 inline-block h-7 w-7 cursor-pointer"
                   @click="handlePlayEnglishSound($event, item.english)"
-                ></UIcon>
-              </UTooltip>
+                />
+              </AppTooltip>
             </div>
           </div>
         </div>
       </div>
-    </UContainer>
-  </UModal>
+    </div>
+  </AppModal>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 
+import CommonModalHeader from "~/components/common/ModalHeader.vue";
+import AppIcon from "~/components/ui/AppIcon.vue";
+import AppModal from "~/components/ui/AppModal.vue";
+import AppSelect from "~/components/ui/AppSelect.vue";
+import AppTooltip from "~/components/ui/AppTooltip.vue";
 import { playEnglish } from "~/composables/main/englishSound";
 import { useGameMode } from "~/composables/main/game";
 import { useCourseContents } from "~/composables/main/useCourseContents";

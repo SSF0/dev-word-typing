@@ -4,29 +4,29 @@
       ref="clockIcon"
       class="mr-1 flex items-center justify-center"
     >
-      <UIcon
-        name="i-ph-alarm-bold"
+      <AppIcon
+        name="alarm"
         class="h-8 w-8"
-      ></UIcon>
+      />
     </div>
     <p class="text-lg font-bold">{{ formattedTime }}</p>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
+import AppIcon from "~/components/ui/AppIcon.vue";
 import { useLearningTimeTracker } from "~/composables/main/learningTimeTracker";
 import { useGamePause } from "~/composables/main/useGamePause";
 import { useGameStore } from "~/store/game";
 
-const { $anime } = useNuxtApp();
 const gameStore = useGameStore();
 
 const { pauseGame, enableAutoPauseCheck, disableAutoPauseCheck } = useGamePause();
 
 const { totalSeconds, stopTracking } = useLearningTimeTracker();
-const clockIcon = ref(null);
+const clockIcon = ref<HTMLElement | null>(null);
 
 const formattedTime = computed(() => {
   const hours = Math.floor(totalSeconds.value / 3600);
@@ -36,29 +36,17 @@ const formattedTime = computed(() => {
 });
 
 function animateClock() {
-  $anime({
-    targets: clockIcon.value,
-    translateY: [
-      { value: -4, duration: 100, easing: "easeInOutQuad" },
-      { value: 4, duration: 200, easing: "easeInOutQuad" },
-      { value: -4, duration: 200, easing: "easeInOutQuad" },
-      { value: 4, duration: 200, easing: "easeInOutQuad" },
-      { value: 0, duration: 100, easing: "easeInOutQuad" },
+  clockIcon.value?.animate(
+    [
+      { transform: "translateY(0) rotate(0) scale(1)" },
+      { transform: "translateY(-4px) rotate(-5deg) scale(1.05)" },
+      { transform: "translateY(4px) rotate(5deg) scale(1.1)" },
+      { transform: "translateY(-4px) rotate(-5deg) scale(1.05)" },
+      { transform: "translateY(4px) rotate(5deg) scale(1)" },
+      { transform: "translateY(0) rotate(0) scale(1)" },
     ],
-    rotate: [
-      { value: -5, duration: 100, easing: "easeInOutQuad" },
-      { value: 5, duration: 200, easing: "easeInOutQuad" },
-      { value: -5, duration: 200, easing: "easeInOutQuad" },
-      { value: 5, duration: 200, easing: "easeInOutQuad" },
-      { value: 0, duration: 100, easing: "easeInOutQuad" },
-    ],
-    scale: [
-      { value: 1.1, duration: 400, easing: "easeInOutQuad" },
-      { value: 1, duration: 400, easing: "easeInOutQuad" },
-    ],
-    duration: 800,
-    loop: 1,
-  });
+    { duration: 800, easing: "ease-in-out" },
+  );
 }
 
 watch(totalSeconds, (newValue) => {

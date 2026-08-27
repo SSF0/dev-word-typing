@@ -46,9 +46,9 @@
         },
       ]"
     >
-      <UTooltip :text="dataTip">
+      <AppTooltip :text="dataTip">
         {{ count }}
-      </UTooltip>
+      </AppTooltip>
     </div>
   </div>
 </template>
@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 
+import AppTooltip from "~/components/ui/AppTooltip.vue";
 import { useActiveCourseMap } from "~/composables/courses/activeCourse";
 
 const props = defineProps<{

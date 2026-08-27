@@ -72,6 +72,7 @@
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 
+import MainMasteredBtn from "~/components/main/MasteredBtn.vue";
 import { courseTimer } from "~/composables/courses/courseTimer";
 import { useAnswerTip } from "~/composables/main/answerTip";
 import { useCurrentStatementEnglishSound } from "~/composables/main/englishSound";

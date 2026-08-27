@@ -5,14 +5,18 @@
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body relative">
         <div class="absolute right-2 top-1 mt-0">
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-x-mark-20-solid"
+          <button
+            type="button"
+            class="btn btn-circle btn-ghost btn-sm dark:hover:bg-gray-600"
             @click="hiddenAnswerTip"
             tabindex="-1"
-            :ui="{ color: { gray: { ghost: 'dark:hover:bg-gray-600' } } }"
-          />
+            aria-label="关闭答案提示"
+          >
+            <AppIcon
+              name="close"
+              class="h-5 w-5"
+            />
+          </button>
         </div>
 
         <div class="text-3xl">
@@ -24,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from "~/components/ui/AppIcon.vue";
 import { useAnswerTip } from "~/composables/main/answerTip";
 import { useCourseStore } from "~/store/course";
 

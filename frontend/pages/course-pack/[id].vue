@@ -34,15 +34,17 @@
 </template>
 
 <script setup lang="ts">
-import { navigateTo } from "#app";
 import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
+import Loading from "~/components/Loading.vue";
+import CoursesCourseCard from "~/components/courses/CourseCard.vue";
 import { useActiveCourseMap } from "~/composables/courses/activeCourse";
 import { useCoursePackStore } from "~/store/coursePack";
 
 const isLoading = ref(false);
 const route = useRoute();
+const router = useRouter();
 const coursePackStore = useCoursePackStore();
 const coursePackId = route.params.id as string;
 const { updateActiveCourseMap } = useActiveCourseMap();
@@ -57,7 +59,7 @@ async function setup() {
 
 function handleChangeCourse(courseId: string) {
   updateActiveCourseMap(coursePackId, courseId);
-  navigateTo(`/game/${coursePackId}/${courseId}`);
+  router.push(`/game/${coursePackId}/${courseId}`);
 }
 </script>
 

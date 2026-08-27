@@ -15,8 +15,8 @@
 - **[需求大纲 / 路线图 / 设计原则](./docs/roadmap.md)**
 
 ## 关键技术/部署要点
-- 前端 **Nuxt3 (Vue3) + Pinia + Tailwind/daisyUI**（照搬 earthworm`apps/client`再裁剪）；后端 **Spring Boot3 (Java17) + JPA**；DB **MySQL 8.4**（Docker `springboot-learn-mysql`，root 空密码，库 `word_typing`）。
-- Java17 路径：`/Users/mac/解释器/java/Contents/Home`；前端版本锁定 `nuxt 3.12.1` / `vue 3.4.29`。
+- 前端 **Vue3 + TypeScript + Vite + Pinia + Tailwind/daisyUI**（从 earthworm`apps/client`裁剪并移除 Nuxt 壳）；后端 **Spring Boot3 (Java17) + JPA**；DB **MySQL 8.4**（Docker `springboot-learn-mysql`，root 空密码，库 `word_typing`）。
+- Java17 路径：`/Users/mac/解释器/java/Contents/Home`；前端版本锁定 `vue 3.4.29` / `vite 5.3.1` / `typescript 5.4.5`。
 - 端口：本前端 `3002/3003`，后端 `8080`（**别撞 earthworm 的 3000/3001/3010**）。
 - `DataSeeder` 会幂等刷新内置 Java 小节；JPA `ddl-auto=update` 自动补充新增字段。
 - 已 push GitHub 公开仓库 `SSF0/dev-word-typing`（main）。
@@ -24,7 +24,7 @@
 ## ⚙️ 常用命令
 ```bash
 # 后端
-cd backend && JAVA_HOME=/Users/mac/解释器/java/Contents/Home ./mvnw spring-boot:run
-# 前端生产构建预览
-cd frontend && API_BASE=http://localhost:8080 pnpm build && PORT=3003 node .output/server/index.mjs
+cd backend && LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 JAVA_HOME=/Users/mac/解释器/java/Contents/Home ./mvnw spring-boot:run
+# 前端生产构建预览（Vite 静态产物 dist/）
+cd frontend && VITE_API_BASE=http://localhost:8080 pnpm build && pnpm preview --host 0.0.0.0
 ```

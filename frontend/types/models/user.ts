@@ -7,4 +7,5 @@ export interface SetupUser extends SetupUserApiResponse {}
 export type User = UserApiResponse & {
   avatar: string;
   id: string;
+  username: string;
 };

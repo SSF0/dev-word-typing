@@ -1,8 +1,5 @@
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
-  <UModals />
+  <DefaultLayout />
   <Toaster
     :theme="darkMode === Theme.DARK ? 'dark' : 'light'"
     position="top-center"
@@ -18,6 +15,7 @@
 <script setup lang="ts">
 import { Toaster } from "vue-sonner";
 
+import DefaultLayout from "~/layouts/default.vue";
 import { Theme, useDarkMode } from "~/composables/darkMode";
 
 const { initDarkMode, darkMode } = useDarkMode();

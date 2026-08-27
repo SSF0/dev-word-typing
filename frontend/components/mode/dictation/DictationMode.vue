@@ -25,6 +25,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 
+import MainAnswer from "~/components/main/Answer.vue";
+import MainAnswerTip from "~/components/main/AnswerTip.vue";
+import ModeDictationQuestion from "~/components/mode/dictation/Question.vue";
 import { useAnswerTip } from "~/composables/main/answerTip";
 import { useGameMode } from "~/composables/main/game";
 import { useDevice } from "~/utils/detectDevice";

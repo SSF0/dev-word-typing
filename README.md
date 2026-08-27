@@ -9,7 +9,7 @@
 
 ```
 dev-word-typing/
-├── frontend/   # Nuxt 3 (Vue 3) + Pinia + Tailwind/daisyUI —— 照搬并裁剪 earthworm 前端
+├── frontend/   # Vue 3 + TypeScript + Vite + Pinia + Tailwind/daisyUI
 └── backend/    # Spring Boot 3 (Java 17) + Spring Data JPA + MySQL —— 数据与接口
 ```
 
@@ -27,6 +27,8 @@ docker start springboot-learn-mysql   # MySQL 8.4，端口 3306，root 空密码
 
 ```bash
 cd backend
+export LC_ALL="en_US.UTF-8"                              # Java 路径含中文时避免 Maven 子进程乱码
+export LANG="en_US.UTF-8"
 export JAVA_HOME="/Users/mac/解释器/java/Contents/Home"   # 你的 Java 17 路径
 ./mvnw spring-boot:run
 ```
@@ -39,10 +41,19 @@ export JAVA_HOME="/Users/mac/解释器/java/Contents/Home"   # 你的 Java 17 �
 ```bash
 cd frontend
 pnpm install
-API_BASE=http://localhost:8080 pnpm dev
+VITE_API_BASE=http://localhost:8080 pnpm dev
 ```
 
-浏览器打开 `http://localhost:3000/course-pack`。
+浏览器打开 `http://localhost:3002/course-pack`。
+
+生产构建与本地预览：
+
+```bash
+VITE_API_BASE=http://localhost:8080 pnpm build
+pnpm preview --host 0.0.0.0
+```
+
+预览地址为 `http://localhost:3003/course-pack`，构建产物位于 `frontend/dist/`。
 
 ## 数据模型（后端 JPA）
 
@@ -76,5 +87,5 @@ API_BASE=http://localhost:8080 pnpm dev
 
 ## 说明
 
-- 前端框架版本已对齐 earthworm 原工程（Nuxt 3.12 / Vue 3.4），保证「流程样式相同」。
+- 前端保留 earthworm 的 Vue 3 打字流程与样式，运行壳已迁移为纯 Vue 3 + TypeScript + Vite SPA。
 - 项目为「可落地使用」而非 demo，前后端分离、数据落库 MySQL。

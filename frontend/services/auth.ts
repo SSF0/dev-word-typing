@@ -23,7 +23,9 @@ export function fetchUserInfo() {
 }
 
 export function getSignInCallback() {
-  return "/";
+  const callback = sessionStorage.getItem("callback") || "/";
+  sessionStorage.removeItem("callback");
+  return callback;
 }
 
 function setSignInCallback(callback: string) {

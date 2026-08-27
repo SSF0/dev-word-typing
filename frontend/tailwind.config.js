@@ -1,7 +1,15 @@
+import daisyui from "daisyui";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: "class",
-  content: [],
+  content: [
+    "./index.html",
+    "./app.vue",
+    "./layouts/**/*.vue",
+    "./pages/**/*.vue",
+    "./components/**/*.vue",
+  ],
   theme: {
     extend: {
       boxShadow: {
@@ -48,7 +56,7 @@ export default {
     },
   },
   plugins: [
-    require("daisyui"),
+    daisyui,
     function ({ addComponents, addUtilities }) {
       const buttons = {
         ".tw-btn-blue": {

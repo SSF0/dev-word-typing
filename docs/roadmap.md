@@ -7,7 +7,8 @@
 - [x] WORD 单词模式（中文释义 → 打英文单词），复用 earthworm 打字引擎
 - [x] SENTENCE 模式字段预留（`practiceType`）
 - [x] 侧栏：注解源码 + 使用场景 + 个人笔记（可编辑入库）
-- [x] 前后端分离（Nuxt3 + Spring Boot3 + MySQL），GitHub 已 push
+- [x] 前后端分离（Vue3 + TypeScript + Vite / Spring Boot3 / MySQL），GitHub 已 push
+- [x] 前端移除 Nuxt/Nitro，迁移为纯 Vue 3 + Vite SPA
 
 ## 路线图 🗺
 - [ ] **技术复合词发音兼容**：记录 `RequestMapping` 等驼峰词仍可能缺少语音，后续补可用性检测与降级发音。

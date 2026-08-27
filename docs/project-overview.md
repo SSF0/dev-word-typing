@@ -23,12 +23,12 @@
 
 | 端 | 技术 | 说明 |
 |---|---|---|
-| 前端 | **Nuxt 3 (Vue 3) + Pinia + Tailwind/daisyUI** | 从 earthworm 的 `apps/client` **照搬**页面流程/样式，再裁剪 |
+| 前端 | **Vue 3 + TypeScript + Vite + Pinia + Tailwind/daisyUI** | 保留 earthworm 的页面流程/样式，使用纯 Vue SPA 运行壳 |
 | 后端 | **Spring Boot 3 (Java 17) + Spring Data JPA** | RESTful API |
 | 数据库 | **MySQL 8.4**（Docker 容器 `springboot-learn-mysql`，root 空密码，库名 `word_typing`） | 首启自动建表 + 种子 |
 
 - Java 17：`/Users/mac/解释器/java/Contents/Home`
-- 前端版本锁定 `nuxt 3.12.1` / `vue 3.4.29`（与 earthworm 原工程一致，保证「流程样式相同」）
+- 前端版本锁定 `vue 3.4.29` / `vite 5.3.1` / `typescript 5.4.5`
 
 ## 四、目录结构
 
@@ -36,7 +36,7 @@
 dev-word-typing/
 ├── docs/       # 项目文档（本目录），规则/规范后续沉淀于此
 ├── AGENTS.md   # AI 入口：核心思想速览 + 指向 docs
-├── frontend/   # Nuxt 3（照搬并裁剪 earthworm 前端 + 单词模式/笔记/源码侧栏）
+├── frontend/   # Vue 3 + TypeScript + Vite（单词模式/笔记/源码侧栏）
 └── backend/    # Spring Boot 3 + JPA + MySQL
 ```
 
@@ -90,12 +90,13 @@ tech_stack（技术栈 = course-pack 列表项）
 - [x] 前端照搬 earthworm 流程（列表→详情→练习），去登录/会员/分享
 - [x] WORD 模式（中文释义→打单词）+ 节点卡片模式徽标
 - [x] 侧栏注解源码 + 笔记（可编辑入库）
+- [x] 前端移除 Nuxt/Nitro，迁移为 Vue 3 + TypeScript + Vite SPA
 - [x] 已 push GitHub 公开仓库 `SSF0/dev-word-typing`（main）
 
 ## 九、🏁 给开发者的注意事项
 
 1. 核心是**练单词，不是练句子** → 做决定前先看 `practiceType`。
 2. **端口别撞 earthworm**：earthworm 前端 3000、后端 3001/3010；本前端建议 3002/3003，后端 8080。
-3. 前端从 earthworm 照搬，改动必须保留「流程样式相同」，改 Nuxt/Vue 版本要谨慎。
+3. 前端保留 earthworm 的核心流程和样式；升级 Vue/Vite/TypeScript 版本时要保持锁定并跑完整门禁。
 4. `DataSeeder` 会幂等刷新内置 Java 小节并保留同名练习项的掌握状态和笔记；JPA `ddl-auto=update` 负责补充字段。
-5. 别提交 `node_modules/.nuxt/.output/backend/target`（已 gitignore）。
+5. 别提交 `node_modules/`、`frontend/dist/`、`backend/target/`（已 gitignore）。

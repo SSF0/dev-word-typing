@@ -1,5 +1,4 @@
 import { shallowMount } from "@vue/test-utils";
-import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import { describe, expect, it, vi } from "vitest";
 
 import Tool from "../Tool.vue";
@@ -8,10 +7,7 @@ const mocks = vi.hoisted(() => ({
   openGameSettingModal: vi.fn(),
   pauseGame: vi.fn(),
   openCourseContents: vi.fn(),
-  modalOpen: vi.fn(),
 }));
-
-mockNuxtImport("useModal", () => () => ({ open: mocks.modalOpen }));
 
 vi.mock("~/components/main/QuestionInput/questionInputHelper", () => ({
   useQuestionInput: () => ({ focusInput: vi.fn() }),
@@ -70,7 +66,7 @@ describe("Tool", () => {
       global: {
         renderStubDefaultSlot: true,
         stubs: {
-          NuxtLink: { template: "<a><slot /></a>" },
+          RouterLink: { template: "<a><slot /></a>" },
         },
       },
     });

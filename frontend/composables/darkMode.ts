@@ -12,8 +12,13 @@ const LIGHT_THEME_CLASS = "light";
 
 const darkMode = ref(Theme.LIGHT);
 export function useDarkMode() {
+  const startViewTransition = (
+    document as Document & {
+      startViewTransition?: (callback: () => void) => { ready: Promise<void> };
+    }
+  ).startViewTransition;
   const isAppearanceTransition =
-    document.startViewTransition && !window.matchMedia(`(prefers-reduced-motion: reduce)`).matches;
+    startViewTransition && !window.matchMedia(`(prefers-reduced-motion: reduce)`).matches;
 
   const isDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
@@ -46,8 +51,7 @@ export function useDarkMode() {
     const y = event.clientY;
     const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
 
-    // @ts-expect-error: Transition API
-    const transition = document.startViewTransition(() => {
+    const transition = startViewTransition!.call(document, () => {
       setDarkMode(!isDark);
     });
 

@@ -1,12 +1,16 @@
-import { defineVitestConfig } from "@nuxt/test-utils/config";
-import { configDefaults } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vitest/config";
 
-export default defineVitestConfig({
+export default defineConfig({
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      "~": fileURLToPath(new URL(".", import.meta.url)),
+      "@": fileURLToPath(new URL(".", import.meta.url)),
+    },
+  },
   test: {
     environment: "happy-dom",
-    exclude: [
-      ...configDefaults.exclude,
-      "tests/config/nuxt-dependency-baseline.test.ts",
-    ],
   },
 });

@@ -6,15 +6,15 @@
         class="arrow-btn"
         @click="goToPreviousQuestion"
       >
-        <UTooltip
+        <AppTooltip
           text="上一题"
           :shortcuts="parseShortcut(shortcutKeys.previous)"
         >
-          <UIcon
-            name="i-ph-caret-left"
+          <AppIcon
+            name="caret-left"
             class="h-12 w-12"
-          ></UIcon>
-        </UTooltip>
+          />
+        </AppTooltip>
       </button>
     </div>
 
@@ -24,15 +24,15 @@
         class="arrow-btn"
         @click="goToNextQuestion"
       >
-        <UTooltip
+        <AppTooltip
           text="下一题"
           :shortcuts="parseShortcut(shortcutKeys.skip)"
         >
-          <UIcon
-            name="i-ph-caret-right"
+          <AppIcon
+            name="caret-right"
             class="h-12 w-12"
-          ></UIcon>
-        </UTooltip>
+          />
+        </AppTooltip>
       </button>
     </div>
   </div>
@@ -40,6 +40,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 
+import AppIcon from "~/components/ui/AppIcon.vue";
+import AppTooltip from "~/components/ui/AppTooltip.vue";
 import { useGameMode } from "~/composables/main/game";
 import { parseShortcut, useShortcutKeyMode } from "~/composables/user/shortcutKey";
 import { useCourseStore } from "~/store/course";

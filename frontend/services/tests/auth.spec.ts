@@ -1,20 +1,10 @@
-import { useLogto } from "@logto/vue";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { getSignInCallback, setupAuth, signIn } from "../auth";
 
-import "../auth";
-
-vi.mock("@logto/vue");
-
-vi.mocked(useLogto).mockImplementation(() => {
-  return {
-    signIn: vi.fn(),
-  } as any;
-});
-
 describe("auth", () => {
-  beforeAll(() => {
+  beforeEach(() => {
+    sessionStorage.clear();
     setupAuth();
   });
 

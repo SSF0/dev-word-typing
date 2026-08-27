@@ -4,15 +4,17 @@
     :data-content="route.path === '/' ? 'Back to Top' : 'Go to Home'"
     @click="scrollToTop"
   >
-    <UIcon
-      name="i-ph-arrow-up-bold"
+    <AppIcon
+      name="arrow-up"
       class="svgIcon h-5 w-5 fill-black transition-all duration-300 dark:fill-white"
-    ></UIcon>
+    />
   </button>
 </template>
 
 <script setup lang="ts">
 import { useRoute } from "vue-router";
+
+import AppIcon from "~/components/ui/AppIcon.vue";
 
 const route = useRoute();
 

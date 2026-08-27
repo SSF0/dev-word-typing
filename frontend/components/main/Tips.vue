@@ -7,9 +7,13 @@
         class="btn btn-ghost"
       >
         <div class="flex items-center gap-0.5">
-          <UKbd v-for="keyStr in parseShortcutKeys(keybinding.keys)">
+          <kbd
+            v-for="keyStr in parseShortcutKeys(keybinding.keys)"
+            :key="keyStr"
+            class="kbd kbd-sm"
+          >
             {{ keyStr }}
-          </UKbd>
+          </kbd>
         </div>
         <span>{{ keybinding.text }}</span>
       </button>
@@ -22,6 +26,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from "vue";
 
+import MainPrevAndNextBtn from "~/components/main/PrevAndNextBtn.vue";
 import { useAnswerTip } from "~/composables/main/answerTip";
 import { useCurrentStatementEnglishSound } from "~/composables/main/englishSound";
 import { useGameMode } from "~/composables/main/game";

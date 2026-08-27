@@ -10,6 +10,7 @@
 <script setup lang="ts">
 import { onMounted, watch } from "vue";
 
+import MainQuestionInput from "~/components/main/QuestionInput/QuestionInput.vue";
 import { useCurrentStatementEnglishSound } from "~/composables/main/englishSound";
 import { useAutoPlayEnglish } from "~/composables/user/sound";
 import { useCourseStore } from "~/store/course";

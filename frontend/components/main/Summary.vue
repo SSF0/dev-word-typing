@@ -1,14 +1,9 @@
 <template>
-  <UModal
+  <AppModal
     v-model="showModal"
     prevent-close
   >
-    <UContainer
-      :ui="{
-        base: 'w-[90vw]',
-        constrained: 'max-w-[780px]',
-      }"
-    >
+    <div class="w-[90vw] max-w-[780px] p-5">
       <div class="flex justify-between">
         <h3 class="mb-4 text-lg font-bold">🎉 恭喜!</h3>
       </div>
@@ -41,17 +36,18 @@
           @click="goToNextCourse"
         >
           下一课
-          <UKbd> ↵ </UKbd>
+          <kbd class="kbd kbd-sm"> ↵ </kbd>
         </button>
       </div>
-    </UContainer>
-  </UModal>
+    </div>
+  </AppModal>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 
+import AppModal from "~/components/ui/AppModal.vue";
 import { courseTimer } from "~/composables/courses/courseTimer";
 import { useGameMode } from "~/composables/main/game";
 import { useSummary } from "~/composables/main/summary";
@@ -65,7 +61,7 @@ const { gotoCourseList, gotoGame } = useNavigation();
 const { showQuestion } = useGameMode();
 const { showModal, hideSummary } = useSummary();
 
-const nextNodeId = ref<number | undefined>();
+const nextNodeId = ref<string | undefined>();
 const haveNextNode = computed(() => !!nextNodeId.value);
 
 watch(showModal, (val) => {
